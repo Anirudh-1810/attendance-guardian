@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,6 @@ import { Upload, Calendar, FileText, Check, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Onboarding() {
-  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [timetableUploaded, setTimetableUploaded] = useState(false);
 
@@ -22,8 +20,14 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
+    // 1. SAVE THE STATE so App.tsx knows you are done
+    localStorage.setItem("onboarded", "true");
+    
     toast.success("Setup complete! Welcome to Attendance Risk Detector");
-    navigate("/");
+    
+    // 2. FORCE RELOAD to ensure App.tsx re-checks the localStorage
+    // Using navigate("/") isn't enough because App.tsx state won't refresh automatically
+    window.location.href = "/";
   };
 
   const steps = [
