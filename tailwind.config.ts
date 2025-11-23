@@ -22,6 +22,8 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          light: "hsl(var(--primary-light))",
+          dark: "hsl(var(--primary-dark))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -46,6 +48,29 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        risk: {
+          safe: "hsl(var(--risk-safe))",
+          "safe-foreground": "hsl(var(--risk-safe-foreground))",
+          "safe-light": "hsl(var(--risk-safe-light))",
+          warning: "hsl(var(--risk-warning))",
+          "warning-foreground": "hsl(var(--risk-warning-foreground))",
+          "warning-light": "hsl(var(--risk-warning-light))",
+          high: "hsl(var(--risk-high))",
+          "high-foreground": "hsl(var(--risk-high-foreground))",
+          "high-light": "hsl(var(--risk-high-light))",
+          critical: "hsl(var(--risk-critical))",
+          "critical-foreground": "hsl(var(--risk-critical-foreground))",
+          "critical-light": "hsl(var(--risk-critical-light))",
+        },
+        surprise: {
+          low: "hsl(var(--surprise-low))",
+          medium: "hsl(var(--surprise-medium))",
+          high: "hsl(var(--surprise-high))",
+        },
+        leave: {
+          duty: "hsl(var(--leave-duty))",
+          medical: "hsl(var(--leave-medical))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
