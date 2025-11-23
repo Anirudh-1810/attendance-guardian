@@ -4,31 +4,34 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatCard } from "@/components/StatCard";
 import { ArrowLeft, BookOpen, User, AlertCircle, TrendingUp, Calendar, Target } from "lucide-react";
-
-const mockSubjectData = {
-  name: "Data Structures",
-  code: "CS201",
-  teacher: "Dr. Sarah Johnson",
-  attendance: 88,
-  required: 75,
-  status: "safe" as const,
-  surpriseLevel: "low" as const,
-  canBunk: 3,
-  mustAttend: 0,
-  weeksLeft: 8,
-  classesPerWeek: 4,
-  totalClasses: 48,
-  attended: 42,
-  missed: 6,
-};
+import { useAttendanceData } from "@/hooks/useAttendanceData";
+import { calculateStatus, calculateBunks, calculateMustAttend } from "@/lib/calculations";
+import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 
 export default function SubjectDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { getSubject } = useAttendanceData();
+  
+  const subject = getSubject(Number(id));
+
+  if (!subject) return <div>Subject not found</div>;
+
+  const attendancePct = Math.round((subject.attendedClasses / subject.totalClasses) * 100);
+  const status = calculateStatus(subject);
+  const bunks = calculateBunks(subject);
+  const mustAttend = calculateMustAttend(subject);
+
+  // Mock chart data based on current stats
+  const chartData = [
+    { week: "Week 1", val: 100 },
+    { week: "Week 2", val: 90 },
+    { week: "Week 3", val: 85 },
+    { week: "Current", val: attendancePct },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
@@ -38,14 +41,11 @@ export default function SubjectDetail() {
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <BookOpen className="h-5 w-5 text-primary" />
-                <h1 className="text-xl font-bold">{mockSubjectData.name}</h1>
+                <h1 className="text-xl font-bold">{subject.name}</h1>
               </div>
-              <p className="text-sm text-muted-foreground">{mockSubjectData.code}</p>
+              <p className="text-sm text-muted-foreground">{subject.code}</p>
             </div>
-            <div className="flex gap-2">
-              <Badge variant="safe">{mockSubjectData.status}</Badge>
-              <Badge variant="surprise-low">{mockSubjectData.surpriseLevel} Surprise</Badge>
-            </div>
+            <Badge variant={status === 'safe' ? 'safe' : 'critical'}>{status.toUpperCase()}</Badge>
           </div>
         </div>
       </header>
@@ -59,98 +59,32 @@ export default function SubjectDetail() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Instructor</p>
-              <p className="font-semibold">{mockSubjectData.teacher}</p>
+              <p className="font-semibold">{subject.teacher}</p>
             </div>
           </div>
         </Card>
 
-        {/* Key Stats */}
+        {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard
-            title="Current %"
-            value={`${mockSubjectData.attendance}%`}
-            icon={TrendingUp}
-            gradient
-          />
-          <StatCard
-            title="Required %"
-            value={`${mockSubjectData.required}%`}
-            icon={Target}
-          />
-          <StatCard
-            title="Can Bunk"
-            value={mockSubjectData.canBunk}
-            subtitle="Next classes"
-            icon={Calendar}
-          />
-          <StatCard
-            title="Must Attend"
-            value={mockSubjectData.mustAttend}
-            subtitle="Next classes"
-            icon={AlertCircle}
-          />
+          <StatCard title="Current %" value={`${attendancePct}%`} icon={TrendingUp} gradient />
+          <StatCard title="Required %" value={`${subject.requiredPercentage}%`} icon={Target} />
+          <StatCard title="Can Bunk" value={bunks} subtitle="Next classes" icon={Calendar} />
+          <StatCard title="Must Attend" value={mustAttend} subtitle="Next classes" icon={AlertCircle} />
         </div>
 
-        {/* Attendance Breakdown */}
-        <Card className="p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Attendance Breakdown</h2>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-4 rounded-lg bg-muted">
-              <p className="text-3xl font-bold text-foreground">{mockSubjectData.totalClasses}</p>
-              <p className="text-sm text-muted-foreground">Total Classes</p>
-            </div>
-            <div className="text-center p-4 rounded-lg bg-risk-safe-light">
-              <p className="text-3xl font-bold text-risk-safe">{mockSubjectData.attended}</p>
-              <p className="text-sm text-muted-foreground">Attended</p>
-            </div>
-            <div className="text-center p-4 rounded-lg bg-risk-critical-light">
-              <p className="text-3xl font-bold text-risk-critical">{mockSubjectData.missed}</p>
-              <p className="text-sm text-muted-foreground">Missed</p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Charts Section */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card className="p-6">
-            <h3 className="font-semibold mb-4">Attendance Trend</h3>
-            <div className="h-64 flex items-center justify-center bg-muted/30 rounded-lg">
-              <p className="text-muted-foreground">Line chart coming soon</p>
-            </div>
-          </Card>
-          <Card className="p-6">
-            <h3 className="font-semibold mb-4">Monthly Comparison</h3>
-            <div className="h-64 flex items-center justify-center bg-muted/30 rounded-lg">
-              <p className="text-muted-foreground">Bar chart coming soon</p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Suggestions */}
-        <Card className={`p-6 ${mockSubjectData.status === "safe" ? "bg-risk-safe-light border-risk-safe" : "bg-risk-warning-light border-risk-warning"} border-2`}>
-          <div className="flex gap-4">
-            <div className="flex-shrink-0">
-              {mockSubjectData.status === "safe" ? (
-                <div className="h-12 w-12 rounded-full bg-risk-safe/20 flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-risk-safe" />
-                </div>
-              ) : (
-                <div className="h-12 w-12 rounded-full bg-risk-warning/20 flex items-center justify-center">
-                  <AlertCircle className="h-6 w-6 text-risk-warning" />
-                </div>
-              )}
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold mb-2">
-                {mockSubjectData.status === "safe" ? "Great Job!" : "Action Required"}
-              </h3>
-              <p className="text-sm text-foreground">
-                {mockSubjectData.status === "safe"
-                  ? `You're doing well! You can afford to miss ${mockSubjectData.canBunk} more classes and still maintain your required attendance.`
-                  : `You need to attend the next ${mockSubjectData.mustAttend} classes to stay above the required attendance percentage.`}
-              </p>
-            </div>
-          </div>
+        {/* Chart */}
+        <Card className="p-6 h-80">
+          <h3 className="font-semibold mb-4">Attendance Trend</h3>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <XAxis dataKey="week" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}%`} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "8px", border: "1px solid hsl(var(--border))" }}
+              />
+              <Line type="monotone" dataKey="val" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 4, fill: "hsl(var(--primary))" }} />
+            </LineChart>
+          </ResponsiveContainer>
         </Card>
       </main>
     </div>
