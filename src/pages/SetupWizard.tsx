@@ -18,6 +18,9 @@ export default function SetupWizard() {
   const [step, setStep] = useState(1);
   const [uploadMethod, setUploadMethod] = useState<"upload" | "manual">("manual");
   
+  // 🆕 STATE: Store the Raw JSON from Gemini here
+  const [aiData, setAiData] = useState<any>(null);
+
   // Semester data
   const [semesterData, setSemesterData] = useState({
     name: "Spring 2024",
@@ -33,15 +36,20 @@ export default function SetupWizard() {
   // Past attendance
   const [pastAttendance, setPastAttendance] = useState<any[]>([]);
 
+  // 🆕 HANDLER: When AI finishes, don't save immediately. 
+  // Send data to "Manual Entry" tab for verification.
   const handleTimetableUpload = (data: any) => {
-    setSubjects(data.subjects);
-    setSchedule(data.schedule);
-    toast.success("Timetable uploaded successfully!");
+    // console.log("SetupWizard received AI Data:", data);
+    setAiData(data);         // 1. Store raw data
+    setUploadMethod("manual"); // 2. Switch tab to show the form
+    toast.success("Timetable analyzed! Please verify the details below.");
   };
 
   const handleManualEntry = (manualSubjects: any[], manualSchedule: any[]) => {
     setSubjects(manualSubjects);
     setSchedule(manualSchedule);
+    // Optional: Auto-advance to next step if you want
+    // setStep(2); 
   };
 
   const handleBulkAttendance = (records: any[]) => {
@@ -96,10 +104,11 @@ export default function SetupWizard() {
       
       // Step 2: Create subjects
       const createdSubjects = await subjectAPI.bulkCreate(subjects, semester.id);
-      
+    
       // Create subject code to ID map
-      const subjectMap = new Map(
-        createdSubjects.map((s: any) => [s.code, s.id])
+      // We explicitly say: "This is a Map of strings to strings"
+      const subjectMap = new Map<string, string>(
+        createdSubjects.map((s: any) => [String(s.code), String(s.id)])
       );
       
       // Step 3: Generate and create classes
@@ -191,7 +200,11 @@ export default function SetupWizard() {
                 </TabsList>
 
                 <TabsContent value="manual" className="space-y-4">
-                  <ManualTimetableEntry onComplete={handleManualEntry} />
+                  {/* 🆕 PASSED aiData PROP HERE */}
+                  <ManualTimetableEntry 
+                    onComplete={handleManualEntry} 
+                    initialData={aiData} 
+                  />
                 </TabsContent>
 
                 <TabsContent value="upload" className="space-y-4">
@@ -319,7 +332,7 @@ export default function SetupWizard() {
                 <div className="rounded-lg bg-muted p-4">
                   <h3 className="font-semibold mb-2">Semester</h3>
                   <p className="text-sm text-muted-foreground">
-                    {semesterData.name} ({format(new Date(semesterData.startDate), 'MMM d')} - {format(new Date(semesterData.endDate), 'MMM d, yyyy')})
+                    {semesterData.name} ({semesterData.startDate ? format(new Date(semesterData.startDate), 'MMM d') : ''} - {semesterData.endDate ? format(new Date(semesterData.endDate), 'MMM d, yyyy') : ''})
                   </p>
                 </div>
 
