@@ -1,36 +1,16 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { TimetableUpload } from "@/components/TimetableUpload";
-import { SubjectManager } from "@/components/SubjectManager";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Calendar, FileUp, Download, Trash2 } from "lucide-react";
+import { ArrowLeft, Calendar, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAttendanceData } from "@/hooks/useAttendanceData";
-import { ParsedTimetable } from "@/lib/timetableParser";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { subjects, setSubjects, resetAllData } = useAttendanceData();
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-
-  const handleTimetableUpload = (data: ParsedTimetable) => {
-    const newSubjects = data.subjects.map((sub, index) => ({
-      ...sub,
-      id: Date.now() + index,
-      totalClasses: 0,
-      attendedClasses: 0,
-    }));
-    
-    setSubjects(newSubjects);
-    localStorage.setItem("timetable-schedule", JSON.stringify(data.schedule));
-    setUploadDialogOpen(false);
-    toast.success(`${newSubjects.length} subjects imported successfully!`);
-  };
+  const { resetAllData } = useAttendanceData();
 
   const handleResetData = () => {
     if (confirm("Are you sure you want to reset all data? This action cannot be undone.")) {

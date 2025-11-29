@@ -10,26 +10,7 @@ export interface Subject {
   requiredPercentage: number;
 }
 
-const DEFAULT_SUBJECTS: Subject[] = [
-  {
-    id: 1,
-    name: "Data Structures",
-    code: "CS201",
-    teacher: "Dr. Sarah Johnson",
-    totalClasses: 40,
-    attendedClasses: 35,
-    requiredPercentage: 75,
-  },
-  {
-    id: 2,
-    name: "Database Management",
-    code: "CS202",
-    teacher: "Prof. Michael Chen",
-    totalClasses: 38,
-    attendedClasses: 28,
-    requiredPercentage: 75,
-  },
-];
+const DEFAULT_SUBJECTS: Subject[] = [];
 
 export function useAttendanceData() {
   // Initialize with function to read from local storage or use default
