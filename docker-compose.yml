@@ -23,7 +23,7 @@ services:
   # Backend API
   backend:
     build:
-      context: ./server
+      context: ./backend
       dockerfile: Dockerfile
     container_name: attendance-backend
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
   # Frontend
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: attendance-frontend
     restart: unless-stopped
