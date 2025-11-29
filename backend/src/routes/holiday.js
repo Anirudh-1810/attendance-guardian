@@ -1,19 +1,18 @@
-import express from 'express';
-import { PrismaClient } from '@prisma/client';
+const express = require('express');
+const prisma = require('../prisma');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Get all holidays for a semester
 router.get('/', async (req, res) => {
   try {
     const { semesterId } = req.query;
-    
+
     const holidays = await prisma.holiday.findMany({
       where: { semesterId },
       orderBy: { date: 'asc' },
     });
-    
+
     res.json(holidays);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -24,7 +23,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { date, name, type, semesterId } = req.body;
-    
+
     const holiday = await prisma.holiday.create({
       data: {
         date: new Date(date),
@@ -33,7 +32,7 @@ router.post('/', async (req, res) => {
         semesterId,
       },
     });
-    
+
     res.status(201).json(holiday);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -44,7 +43,7 @@ router.post('/', async (req, res) => {
 router.post('/bulk', async (req, res) => {
   try {
     const { holidays } = req.body;
-    
+
     const created = await prisma.$transaction(
       holidays.map(holiday =>
         prisma.holiday.create({
@@ -57,7 +56,7 @@ router.post('/bulk', async (req, res) => {
         })
       )
     );
-    
+
     res.status(201).json(created);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -75,4 +74,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;
