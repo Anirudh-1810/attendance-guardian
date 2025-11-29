@@ -2,7 +2,8 @@ import { useState, useRef } from "react";
 import { Upload, Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { parseTimetableImage, validateTimetableFile, ParsedTimetable } from "@/lib/timetableParser";
+import { validateTimetableFile, ParsedTimetable } from "@/lib/timetableParser";
+import { timetableAPI } from "@/lib/api"; // <--- Connecting to your Backend
 import { toast } from "sonner";
 
 interface TimetableUploadProps {
@@ -17,6 +18,7 @@ export function TimetableUpload({ onUploadComplete, onCancel }: TimetableUploadP
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
+    // 1. Client-side Validation (Size/Type)
     const validation = validateTimetableFile(file);
     
     if (!validation.valid) {
@@ -28,10 +30,18 @@ export function TimetableUpload({ onUploadComplete, onCancel }: TimetableUploadP
     setUploading(true);
 
     try {
-      const parsedData = await parseTimetableImage(file);
+      // 2. Call the Real Backend (Gemini)
+      // This sends the file to localhost:3001/api/timetable/upload
+      const response = await timetableAPI.upload(file);
+      
       toast.success("Timetable parsed successfully!");
-      onUploadComplete(parsedData);
+      
+      // 3. Pass the AI data back to the parent component
+      // response.data contains the JSON extracted by Gemini
+      onUploadComplete(response.data as ParsedTimetable);
+      
     } catch (error) {
+      console.error("Upload failed:", error);
       toast.error("Failed to parse timetable. Please try again.");
       setUploadedFile(null);
     } finally {

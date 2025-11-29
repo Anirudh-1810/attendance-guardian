@@ -135,4 +135,30 @@ export const statsAPI = {
     fetchAPI(`/stats/subject/${subjectId}/trend`),
 };
 
+// ==========================================
+// 🆕 NEW: Timetable Crowdsourcing API
+// ==========================================
+export const timetableAPI = {
+  // We use raw fetch here to let browser handle Multipart Boundary automatically
+  upload: async (file: File) => {
+    const formData = new FormData();
+    formData.append('timetableImage', file);
+
+    const url = `${API_BASE_URL}/timetable/upload`;
+    
+    // Note: No 'Content-Type' header here. Browser sets it for FormData.
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new ApiError(response.status, error.error || error.message || 'Upload failed');
+    }
+
+    return response.json();
+  }
+};
+
 export { ApiError };

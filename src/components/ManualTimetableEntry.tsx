@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +6,19 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Save } from "lucide-react";
 import { toast } from "sonner";
+
+// 1. Define the shape of the data coming from AI
+interface AIData {
+  timeTable: {
+    [key: string]: Array<{
+      subject: string;
+      room: string;
+      teacher: string;
+      startTime: string;
+      endTime: string;
+    }>
+  }
+}
 
 interface Subject {
   name: string;
@@ -23,11 +36,12 @@ interface TimetableSlot {
 
 interface ManualTimetableEntryProps {
   onComplete: (subjects: Subject[], schedule: TimetableSlot[]) => void;
+  initialData?: any; // <--- NEW PROP: Accepts the JSON from Gemini
 }
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-export function ManualTimetableEntry({ onComplete }: ManualTimetableEntryProps) {
+export function ManualTimetableEntry({ onComplete, initialData }: ManualTimetableEntryProps) {
   const [subjects, setSubjects] = useState<Subject[]>([
     { name: "", code: "", teacher: "", requiredPercentage: 75 },
   ]);
@@ -35,6 +49,54 @@ export function ManualTimetableEntry({ onComplete }: ManualTimetableEntryProps) 
   const [schedule, setSchedule] = useState<TimetableSlot[]>([
     { day: "Monday", startTime: "09:00", endTime: "10:00", subjectCode: "" },
   ]);
+
+  // ---------------------------------------------------------
+  // 🧠 THE BRAIN: Auto-fill form when AI data arrives
+  // ---------------------------------------------------------
+  useEffect(() => {
+    if (initialData && initialData.timeTable) {
+      console.log("🤖 Hydrating form with AI data...", initialData);
+      
+      const extractedSubjects = new Map<string, Subject>();
+      const newSchedule: TimetableSlot[] = [];
+
+      // Iterate through days (Monday, Tuesday...)
+      Object.entries(initialData.timeTable).forEach(([day, periods]: [string, any[]]) => {
+        periods.forEach((period) => {
+          // 1. Clean up the Subject Name to create a Code
+          // (e.g., "DSOOPS" -> Code: "DSOOPS", Name: "DSOOPS")
+          const cleanName = period.subject.trim();
+          const cleanCode = cleanName.toUpperCase().replace(/\s+/g, '_'); // Simple code generation
+
+          // 2. Add to Unique Subjects List if not exists
+          if (!extractedSubjects.has(cleanCode)) {
+            extractedSubjects.set(cleanCode, {
+              name: cleanName,
+              code: cleanCode,
+              teacher: period.teacher || "Unknown Faculty",
+              requiredPercentage: 75
+            });
+          }
+
+          // 3. Add to Schedule
+          newSchedule.push({
+            day: day, // Ensure Gemini returns "Monday", not "Mon" (Or map it here)
+            startTime: period.startTime,
+            endTime: period.endTime,
+            subjectCode: cleanCode
+          });
+        });
+      });
+
+      // 4. Update State
+      if (extractedSubjects.size > 0) {
+        setSubjects(Array.from(extractedSubjects.values()));
+        setSchedule(newSchedule);
+        toast.success("Form auto-filled from AI analysis! Please verify.");
+      }
+    }
+  }, [initialData]); 
+  // ---------------------------------------------------------
 
   const addSubject = () => {
     setSubjects([...subjects, { name: "", code: "", teacher: "", requiredPercentage: 75 }]);
@@ -95,7 +157,7 @@ export function ManualTimetableEntry({ onComplete }: ManualTimetableEntryProps) 
       {/* Subjects Section */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Subjects</h3>
+          <h3 className="text-lg font-semibold">Subjects (AI Detected)</h3>
           <Button onClick={addSubject} size="sm">
             <Plus className="h-4 w-4 mr-2" />
             Add Subject
@@ -104,7 +166,7 @@ export function ManualTimetableEntry({ onComplete }: ManualTimetableEntryProps) 
 
         <div className="space-y-4">
           {subjects.map((subject, index) => (
-            <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg">
+            <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg bg-card/50">
               <div className="space-y-2">
                 <Label>Subject Name *</Label>
                 <Input
@@ -161,7 +223,7 @@ export function ManualTimetableEntry({ onComplete }: ManualTimetableEntryProps) 
       {/* Schedule Section */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Weekly Schedule</h3>
+          <h3 className="text-lg font-semibold">Weekly Schedule (AI Detected)</h3>
           <Button onClick={addScheduleSlot} size="sm">
             <Plus className="h-4 w-4 mr-2" />
             Add Slot
@@ -170,7 +232,7 @@ export function ManualTimetableEntry({ onComplete }: ManualTimetableEntryProps) 
 
         <div className="space-y-4">
           {schedule.map((slot, index) => (
-            <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg">
+            <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg bg-card/50">
               <div className="space-y-2">
                 <Label>Day *</Label>
                 <Select value={slot.day} onValueChange={(value) => updateScheduleSlot(index, "day", value)}>
@@ -237,7 +299,7 @@ export function ManualTimetableEntry({ onComplete }: ManualTimetableEntryProps) 
       <div className="flex justify-end gap-3">
         <Button onClick={handleSave} size="lg">
           <Save className="h-4 w-4 mr-2" />
-          Save Timetable
+          Verify & Save to Database
         </Button>
       </div>
     </div>

@@ -2,79 +2,155 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// ⚠️ IMPORTANT: We switched to Postgres for the Server. 
+// SQLite cannot handle multiple users writing to the same file easily on a server.
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
+// ==========================================
+// 1. GLOBAL USER (Connects both worlds)
+// ==========================================
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String?  // Kept 'name' to match your old code
   
-  semesters Semester[]
+  // Auth Integration (Clerk/Firebase ID)
+  externalId    String?  @unique 
+  
+  // PERSONAL SIDE: Access to their private tracking
+  semesters     Semester[]
+
+  // CROWD SIDE: Contributions to the community
+  uploads       TimetableVersion[]
+  votes         Vote[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
+// ==========================================
+// 2. PERSONAL TRACKING (Your Original Code)
+// Used when a user is actually marking attendance
+// ==========================================
 model Semester {
   id                  String   @id @default(uuid())
   name                String
   startDate           DateTime
   endDate             DateTime
   requiredPercentage  Float    @default(75)
-  userId              String
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
   
+  userId              String
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   subjects            Subject[]
   holidays            Holiday[]
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 model Subject {
   id                  String   @id @default(uuid())
   name                String
   code                String
-  teacher             String
+  teacher             String?  // Made optional as AI might not always find it
   requiredPercentage  Float    @default(75)
-  semesterId          String
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
   
+  semesterId          String
   semester            Semester @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  
   classes             Class[]
   
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
   @@unique([code, semesterId])
 }
 
 model Class {
-  id          String      @id @default(uuid())
+  id          String   @id @default(uuid())
   subjectId   String
   date        DateTime
   dayOfWeek   String
   startTime   String
   endTime     String
-  status      String      @default("SCHEDULED")
+  status      String   @default("SCHEDULED")
   notes       String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
   
-  subject     Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   
   @@unique([subjectId, date, startTime])
   @@index([subjectId, date])
 }
 
 model Holiday {
-  id          String      @id @default(uuid())
+  id          String   @id @default(uuid())
   date        DateTime
   name        String
-  type        String      @default("HOLIDAY")
+  type        String   @default("HOLIDAY")
+  
   semesterId  String
-  createdAt   DateTime    @default(now())
+  semester    Semester @relation(fields: [semesterId], references: [id], onDelete: Cascade)
   
-  semester    Semester    @relation(fields: [semesterId], references: [id], onDelete: Cascade)
-  
+  createdAt   DateTime @default(now())
+
   @@unique([date, semesterId])
+}
+
+// ==========================================
+// 3. CROWDSOURCING (The New "Wiki" Features)
+// Used to store and share the Raw JSON
+// ==========================================
+
+// The "Folder" for a class (e.g., "CSE - 3rd Year - G1")
+model TimetableMetadata {
+  id            String   @id @default(uuid())
+  
+  department    String   // "CSE"
+  semester      Int      // 5
+  section       String   // "G1"
+  academicYear  String   // "2024-2025"
+
+  versions      TimetableVersion[]
+
+  @@unique([department, semester, section, academicYear])
+}
+
+// The "File" containing the parsed schedule
+model TimetableVersion {
+  id            String   @id @default(uuid())
+  
+  // This stores the structure extracted by Gemini
+  // We will write a script later to convert this JSON -> Subject/Class rows
+  data          Json     
+  
+  uploaderId    String
+  uploader      User     @relation(fields: [uploaderId], references: [id])
+  
+  metadataId    String
+  metadata      TimetableMetadata @relation(fields: [metadataId], references: [id])
+
+  votes         Vote[]
+  netScore      Int      @default(0) 
+  
+  createdAt     DateTime @default(now())
+}
+
+model Vote {
+  id            String   @id @default(uuid())
+  value         Int      // +1 or -1
+  
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  
+  versionId     String
+  version       TimetableVersion @relation(fields: [versionId], references: [id])
+
+  @@unique([userId, versionId])
 }

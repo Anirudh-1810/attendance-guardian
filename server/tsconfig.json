@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    /* Base Options */
+    "target": "es2016",
+    "module": "commonjs",             
+    "outDir": "./dist",
+    "rootDir": "./src",
+    
+    /* Hybrid Mode Settings (CRITICAL for you) */
+    "allowJs": true,                  // Allows your old .js routes to work
+    "checkJs": false,                 // Don't error on old JS code
+    "esModuleInterop": true,          // Allows "import express from 'express'"
+    
+    /* Strictness */
+    "strict": true,
+    "noImplicitAny": false,           // Set to false for now to avoid migration headaches
+    "skipLibCheck": true,             // Speeds up compile
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
