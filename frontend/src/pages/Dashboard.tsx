@@ -4,24 +4,40 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Navbar } from "@/components/Navbar";
-import { GraduationCap, Plus, CheckCircle2, AlertTriangle } from "lucide-react";
+import { GraduationCap, Plus, CheckCircle2, AlertTriangle, Trash2 } from "lucide-react";
 import { useAttendanceData } from "@/hooks/useAttendanceData";
 import { calculateStatus, calculateBunks, calculateMustAttend } from "@/lib/calculations";
 import AddSubjectDialog from "@/components/AddSubjectDialog";
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from "recharts";
+import { ResponsiveContainer, Legend, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { subjects } = useAttendanceData();
+  const { subjects, setSubjects } = useAttendanceData();
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   const totalAttended = subjects.reduce((acc, s) => acc + s.attendedClasses, 0);
   const totalClasses = subjects.reduce((acc, s) => acc + s.totalClasses, 0);
   const avgAttendance = totalClasses > 0 ? Math.round((totalAttended / totalClasses) * 100) : 0;
 
+  const handleDeleteSubject = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    const newSubjects = subjects.filter(s => s.id !== id);
+    setSubjects(newSubjects);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Replaced hardcoded header with Navbar */}
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
 
       <main className="container mx-auto px-4 py-8">
@@ -78,7 +94,7 @@ export default function Dashboard() {
             <Button
               onClick={() => setShowAddDialog(true)}
               size="lg"
-              className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
+              className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg text-white"
             >
               <Plus className="h-5 w-5" />
               Add Subject
@@ -86,10 +102,10 @@ export default function Dashboard() {
           </div>
 
           {subjects.length === 0 ? (
-            <Card className="p-16 text-center bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-2 border-dashed">
+            <Card className="p-16 text-center bg-card/50 backdrop-blur-sm border-2 border-dashed">
               <div className="max-w-md mx-auto space-y-4">
-                <div className="h-24 w-24 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center mx-auto">
-                  <GraduationCap className="h-12 w-12 text-blue-600 dark:text-blue-400" />
+                <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center mx-auto">
+                  <GraduationCap className="h-12 w-12 text-muted-foreground" />
                 </div>
                 <h3 className="text-2xl font-bold">No Subjects Yet</h3>
                 <p className="text-muted-foreground">
@@ -98,7 +114,7 @@ export default function Dashboard() {
                 <Button
                   onClick={() => setShowAddDialog(true)}
                   size="lg"
-                  className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                 >
                   <Plus className="h-5 w-5" />
                   Add Your First Subject
@@ -108,9 +124,9 @@ export default function Dashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {subjects.map((subject) => {
-                const attendancePct = Math.round(
+                const attendancePct = subject.totalClasses > 0 ? Math.round(
                   (subject.attendedClasses / subject.totalClasses) * 100
-                );
+                ) : 0;
                 const status = calculateStatus(subject);
                 const canBunk = calculateBunks(subject);
                 const mustAttend = calculateMustAttend(subject);
@@ -143,14 +159,42 @@ export default function Dashboard() {
                 return (
                   <Card
                     key={subject.id}
-                    className={`p-6 cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 ${config.bg} ${config.border} border-2`}
+                    className={`p-6 cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative group ${config.bg} ${config.border} border-2`}
                     onClick={() => navigate(`/subject/${subject.id}`)}
                   >
+                     {/* Delete Button (Visible on hover) */}
+                     <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                             <Button variant="destructive" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={(e) => e.stopPropagation()}>
+                               <Trash2 className="h-4 w-4" />
+                             </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete {subject.name} and all its attendance data.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={(e) => handleDeleteSubject(subject.id, e)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                     </div>
+
                     <div className="space-y-4">
                       {/* Header */}
                       <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-bold text-xl mb-1">{subject.name}</h3>
+                        <div className="flex-1 pr-8">
+                          <h3 className="font-bold text-xl mb-1 truncate">{subject.name}</h3>
                           <p className="text-sm text-muted-foreground font-medium">
                             {subject.code}
                           </p>
@@ -159,7 +203,7 @@ export default function Dashboard() {
                           </p>
                         </div>
                         <div
-                          className={`h-12 w-12 rounded-xl bg-gradient-to-br ${config.gradient} flex items-center justify-center text-white font-bold text-lg shadow-lg`}
+                          className={`h-12 w-12 rounded-xl bg-gradient-to-br ${config.gradient} flex items-center justify-center text-white font-bold text-lg shadow-lg shrink-0`}
                         >
                           {attendancePct}%
                         </div>
@@ -167,7 +211,7 @@ export default function Dashboard() {
 
                       {/* Progress */}
                       <div className="space-y-2">
-                        <Progress value={attendancePct} className="h-3" />
+                        <Progress value={attendancePct} className="h-3 bg-black/10 dark:bg-white/10" />
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <span>
                             {subject.attendedClasses}/{subject.totalClasses} classes
@@ -177,14 +221,14 @@ export default function Dashboard() {
                       </div>
 
                       {/* Stats */}
-                      <div className="grid grid-cols-2 gap-3 pt-3 border-t">
-                        <div className="text-center p-3 rounded-lg bg-white/50 dark:bg-gray-800/50">
+                      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-black/5 dark:border-white/5">
+                        <div className="text-center p-3 rounded-lg bg-white/50 dark:bg-gray-900/50">
                           <p className="text-xs text-muted-foreground mb-1">Can Bunk</p>
                           <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                             {canBunk}
                           </p>
                         </div>
-                        <div className="text-center p-3 rounded-lg bg-white/50 dark:bg-gray-800/50">
+                        <div className="text-center p-3 rounded-lg bg-white/50 dark:bg-gray-900/50">
                           <p className="text-xs text-muted-foreground mb-1">Must Attend</p>
                           <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                             {mustAttend}
@@ -201,159 +245,46 @@ export default function Dashboard() {
 
         {/* Stock-Style Attendance Comparison */}
         {subjects.length > 0 && (
-          <Card className="p-6 shadow-xl mt-8">
-            <div className="mb-6">
+          <Card className="p-6 shadow-lg mt-8 bg-card text-card-foreground">
+             <div className="mb-6">
               <h2 className="text-2xl font-bold mb-2">Attendance Performance</h2>
-              <p className="text-muted-foreground">
-                Track all subjects like stocks - hover over lines to see details
-              </p>
+              <p className="text-muted-foreground">Track all subjects like stocks</p>
             </div>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart
-                data={(() => {
-                  // Generate weekly data for all subjects
-                  const weeks = 10;
-                  const data = [];
-                  
-                  for (let i = 0; i < weeks; i++) {
-                    const weekData: any = { week: `W${i + 1}` };
-                    
-                    subjects.forEach((subject) => {
-                      const currentPct = Math.round(
-                        (subject.attendedClasses / subject.totalClasses) * 100
-                      );
-                      // Simulate weekly fluctuation
-                      const variance = Math.random() * 8 - 4;
-                      const weekPct = Math.max(
-                        0,
-                        Math.min(100, currentPct + variance - (weeks - i - 1) * 1.5)
-                      );
-                      weekData[subject.code] = Math.round(weekPct);
-                    });
-                    
-                    data.push(weekData);
-                  }
-                  
-                  return data;
-                })()}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis 
-                  dataKey="week" 
-                  stroke="#6b7280" 
-                  fontSize={12}
-                  label={{ value: 'Weeks', position: 'insideBottom', offset: -5 }}
-                />
-                <YAxis 
-                  stroke="#6b7280" 
-                  fontSize={12}
-                  domain={[0, 100]}
-                  label={{ value: 'Attendance %', angle: -90, position: 'insideLeft' }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "white",
-                    border: "2px solid #e5e7eb",
-                    borderRadius: "12px",
-                    padding: "12px",
-                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                  }}
-                  formatter={(value: any, name: string) => {
-                    const subject = subjects.find(s => s.code === name);
-                    if (subject) {
-                      const status = calculateStatus(subject);
-                      const statusEmoji = {
-                        safe: "✅",
-                        warning: "⚠️",
-                        high: "🔶",
-                        critical: "🔴",
-                      };
-                      return [
-                        `${value}% ${statusEmoji[status]}`,
-                        `${subject.name} (${name})`
-                      ];
-                    }
-                    return [`${value}%`, name];
-                  }}
-                />
-                <Legend 
-                  wrapperStyle={{ paddingTop: "20px" }}
-                  formatter={(value: string) => {
-                    const subject = subjects.find(s => s.code === value);
-                    return subject ? `${subject.name} (${value})` : value;
-                  }}
-                />
-                
-                {/* Reference line for required percentage */}
-                <Line
-                  type="monotone"
-                  dataKey="required"
-                  stroke="#94a3b8"
-                  strokeWidth={2}
-                  strokeDasharray="8 8"
-                  dot={false}
-                  name="Required (75%)"
-                  data={Array(10).fill({ required: 75 })}
-                />
-                
-                {/* Dynamic lines for each subject */}
-                {subjects.map((subject) => {
-                  const status = calculateStatus(subject);
-                  
-                  // Color based on status
-                  const colors = {
-                    safe: "#10b981",      // green
-                    warning: "#f59e0b",   // amber
-                    high: "#f97316",      // orange
-                    critical: "#ef4444",  // red
-                  };
-                  
-                  const color = colors[status];
-                  
-                  return (
-                    <Line
+            <div className="h-[400px] w-full">
+             <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={Array.from({ length: 10 }, (_, i) => ({
+                    week: `W${i + 1}`,
+                    ...subjects.reduce((acc, sub) => ({
+                      ...acc,
+                      [sub.code]: Math.min(100, Math.max(0, Math.round((sub.attendedClasses/sub.totalClasses)*100) + (Math.random()*10-5)))
+                    }), {})
+                  }))}
+                >
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="week" className="text-xs" />
+                  <YAxis domain={[0, 100]} className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  />
+                  <Legend />
+                  {subjects.map((subject, index) => (
+                    <Line 
                       key={subject.id}
-                      type="monotone"
-                      dataKey={subject.code}
-                      stroke={color}
-                      strokeWidth={3}
-                      dot={{ fill: color, r: 5, strokeWidth: 2, stroke: "white" }}
-                      activeDot={{ r: 8, strokeWidth: 2 }}
-                      name={subject.code}
+                      type="monotone" 
+                      dataKey={subject.code} 
+                      stroke={`hsl(${index * 60}, 70%, 50%)`}
+                      strokeWidth={2}
+                      dot={false}
                     />
-                  );
-                })}
-              </LineChart>
-            </ResponsiveContainer>
-            
-            {/* Legend for status colors */}
-            <div className="mt-6 flex flex-wrap gap-4 justify-center">
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-8 bg-green-500 rounded"></div>
-                <span className="text-sm text-muted-foreground">Safe (≥75%)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-8 bg-amber-500 rounded"></div>
-                <span className="text-sm text-muted-foreground">Warning (70-74%)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-8 bg-orange-500 rounded"></div>
-                <span className="text-sm text-muted-foreground">High Risk (65-69%)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-8 bg-red-500 rounded"></div>
-                <span className="text-sm text-muted-foreground">Critical (&lt;65%)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-8 bg-gray-400 rounded border-2 border-dashed"></div>
-                <span className="text-sm text-muted-foreground">Required Line</span>
-              </div>
+                  ))}
+                </LineChart>
+             </ResponsiveContainer>
             </div>
           </Card>
         )}
       </main>
 
-      {/* Add Subject Dialog */}
       <AddSubjectDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
     </div>
   );

@@ -3,15 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, BookOpen, User, Calendar as CalendarIcon, Calculator, TrendingUp } from "lucide-react";
 import { useAttendanceData } from "@/hooks/useAttendanceData";
 import { calculateStatus, calculateBunks, calculateMustAttend } from "@/lib/calculations";
-import { format, isSameDay } from "date-fns";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
 import WhatIfCalculator from "@/components/WhatIfCalculator";
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Navbar } from "@/components/Navbar"; 
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line } from "recharts";
 
 export default function SubjectDetail() {
   const navigate = useNavigate();
@@ -22,16 +21,16 @@ export default function SubjectDetail() {
 
   if (!subject) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Subject Not Found</h2>
-          <Button onClick={() => navigate("/")}>Go Back</Button>
+          <Button onClick={() => navigate("/dashboard")}>Go Back to Dashboard</Button>
         </div>
       </div>
     );
   }
 
-  const attendancePct = Math.round((subject.attendedClasses / subject.totalClasses) * 100);
+  const attendancePct = subject.totalClasses > 0 ? Math.round((subject.attendedClasses / subject.totalClasses) * 100) : 0;
   const status = calculateStatus(subject);
   const bunks = calculateBunks(subject);
   const mustAttend = calculateMustAttend(subject);
@@ -44,11 +43,14 @@ export default function SubjectDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+    <div className="min-h-screen bg-background text-foreground">
+      <Navbar />
+      
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-16 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+            {/* UPDATED: Navigate back to Dashboard */}
+            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex-1">
@@ -98,7 +100,7 @@ export default function SubjectDetail() {
         </div>
 
         {/* Attendance Progress Graph */}
-        <Card className="p-6 shadow-xl">
+        <Card className="p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-xl font-semibold">Attendance Progress</h3>
@@ -106,72 +108,53 @@ export default function SubjectDetail() {
             </div>
             <TrendingUp className="h-6 w-6 text-blue-600" />
           </div>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart
-              data={(() => {
-                // Generate mock weekly data based on current attendance
-                const weeks = 8;
-                const data = [];
-                const currentPct = attendancePct;
-                const requiredPct = subject.requiredPercentage;
-                
-                for (let i = 0; i < weeks; i++) {
-                  // Simulate attendance fluctuation
-                  const variance = Math.random() * 10 - 5;
-                  const weekPct = Math.max(0, Math.min(100, currentPct + variance - (weeks - i - 1) * 2));
-                  
-                  data.push({
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                data={Array.from({ length: 8 }, (_, i) => ({
                     week: `Week ${i + 1}`,
-                    attendance: Math.round(weekPct),
-                    required: requiredPct,
-                    attended: Math.round((weekPct / 100) * (subject.totalClasses / weeks)),
-                    total: Math.round(subject.totalClasses / weeks),
-                  });
-                }
-                return data;
-              })()}
-            >
-              <defs>
-                <linearGradient id="colorAttendanceArea" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="week" stroke="#6b7280" fontSize={12} />
-              <YAxis stroke="#6b7280" fontSize={12} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "white",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "8px",
-                  padding: "12px",
-                }}
-                formatter={(value: any, name: string) => {
-                  if (name === "attendance" || name === "required") return [`${value}%`, name];
-                  return [value, name];
-                }}
-              />
-              <Legend />
-              <Area
-                type="monotone"
-                dataKey="attendance"
-                stroke="#3b82f6"
-                strokeWidth={3}
-                fill="url(#colorAttendanceArea)"
-                name="Attendance %"
-              />
-              <Line
-                type="monotone"
-                dataKey="required"
-                stroke="#ef4444"
-                strokeWidth={2}
-                strokeDasharray="5 5"
-                dot={{ fill: "#ef4444", r: 4 }}
-                name="Required %"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+                    attendance: Math.min(100, Math.max(0, attendancePct + (Math.random() * 10 - 5))),
+                    required: subject.requiredPercentage
+                }))}
+                >
+                <defs>
+                    <linearGradient id="colorAttendanceArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1} />
+                    </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="week" stroke="#6b7280" fontSize={12} />
+                <YAxis stroke="#6b7280" fontSize={12} domain={[0, 100]} />
+                <Tooltip
+                    contentStyle={{
+                    backgroundColor: "white",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    }}
+                />
+                <Legend />
+                <Area
+                    type="monotone"
+                    dataKey="attendance"
+                    stroke="#3b82f6"
+                    strokeWidth={3}
+                    fill="url(#colorAttendanceArea)"
+                    name="Attendance %"
+                />
+                <Line
+                    type="monotone"
+                    dataKey="required"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    dot={false}
+                    name="Required %"
+                />
+                </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </Card>
 
         {/* Tabs */}
@@ -188,11 +171,11 @@ export default function SubjectDetail() {
           </TabsList>
 
           <TabsContent value="calendar">
-            <AttendanceCalendar subject={subject} />
+            <AttendanceCalendar subject={{ ...subject, id: String(subject.id) }} />
           </TabsContent>
 
           <TabsContent value="whatif">
-            <WhatIfCalculator subject={subject} />
+            <WhatIfCalculator subject={{ ...subject, id: String(subject.id) }} />
           </TabsContent>
         </Tabs>
       </main>

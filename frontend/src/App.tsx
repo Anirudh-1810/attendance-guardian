@@ -15,6 +15,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   return (
+    // enableSystem ensures it respects OS preference, class attribute for Tailwind
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
