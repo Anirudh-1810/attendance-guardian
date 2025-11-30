@@ -8,7 +8,17 @@ const router = express.Router();
 // POST /auth/signup
 router.post('/signup', async (req, res) => {
   try {
+    console.log('Signup Content-Type:', req.headers['content-type']);
+    console.log('Signup Body:', req.body);
     const { name, email, password } = req.body;
+
+    // Validate required fields
+    if (!email || !password || !name) {
+      return res.status(400).json({
+        message: 'Missing required fields',
+        hint: 'Make sure to send Content-Type: application/json header and include name, email, and password in the request body'
+      });
+    }
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
@@ -29,8 +39,11 @@ router.post('/signup', async (req, res) => {
 
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Signup failed' });
+    console.error('Signup Error Details:');
+    console.error('Message:', err.message);
+    console.error('Stack:', err.stack);
+    console.error('Full Error:', err);
+    res.status(500).json({ message: 'Signup failed', error: err.message });
   }
 });
 
@@ -38,6 +51,14 @@ router.post('/signup', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({
+        message: 'Missing required fields',
+        hint: 'Make sure to send Content-Type: application/json header and include email and password in the request body'
+      });
+    }
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });

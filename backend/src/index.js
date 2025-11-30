@@ -7,7 +7,9 @@ dotenv.config();
 const authRoutes = require('./routes/auth');
 const semesterRoutes = require('./routes/semesters');
 const courseRoutes = require('./routes/courses');
-// const attendanceRoutes = require('./routes/attendance'); // later
+const classRoutes = require('./routes/class');
+const holidayRoutes = require('./routes/holiday');
+const statsRoutes = require('./routes/stats');
 
 const app = express();
 
@@ -18,7 +20,9 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/semesters', semesterRoutes);
 app.use('/courses', courseRoutes);
-// app.use('/attendance', attendanceRoutes);
+app.use('/class', classRoutes);
+app.use('/holiday', holidayRoutes);
+app.use('/stats', statsRoutes);
 
 const PORT = process.env.PORT || 4000;
 
