@@ -2,80 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
     --background: 210 20% 98%;
     --foreground: 222 47% 11%;
-
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-
     --primary: 176 70% 45%;
     --primary-foreground: 0 0% 100%;
     --primary-light: 176 70% 85%;
     --primary-dark: 176 70% 35%;
-
     --secondary: 210 20% 96%;
     --secondary-foreground: 222 47% 11%;
-
     --muted: 210 20% 96%;
     --muted-foreground: 215 16% 47%;
-
     --accent: 192 85% 55%;
     --accent-foreground: 0 0% 100%;
-
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-
     --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 176 70% 45%;
-
     --radius: 1rem;
-
-    /* Risk Colors */
     --risk-safe: 142 71% 45%;
     --risk-safe-foreground: 0 0% 100%;
     --risk-safe-light: 142 71% 95%;
-    
     --risk-warning: 45 93% 47%;
     --risk-warning-foreground: 0 0% 100%;
     --risk-warning-light: 45 93% 95%;
-    
     --risk-high: 25 95% 53%;
     --risk-high-foreground: 0 0% 100%;
     --risk-high-light: 25 95% 95%;
-    
     --risk-critical: 0 84% 60%;
     --risk-critical-foreground: 0 0% 100%;
     --risk-critical-light: 0 84% 95%;
-
-    /* Surprise Attendance Colors */
     --surprise-low: 142 71% 45%;
     --surprise-medium: 45 93% 47%;
     --surprise-high: 0 84% 60%;
-
-    /* Leave Colors */
     --leave-duty: 217 91% 60%;
     --leave-medical: 271 81% 56%;
-
-    /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(222 47% 11% / 0.08);
     --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.1);
     --shadow-xl: 0 20px 25px -5px hsl(222 47% 11% / 0.12);
-
-    /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
     --gradient-risk: linear-gradient(90deg, hsl(var(--risk-safe)), hsl(var(--risk-warning)), hsl(var(--risk-high)), hsl(var(--risk-critical)));
-
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -132,20 +105,18 @@ All colors MUST be HSL.
   }
 }
 
-@layer utilities {
-  .shadow-soft {
-    box-shadow: var(--shadow-md);
-  }
+/* --- MARQUEE ANIMATION --- */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
 
-  .shadow-card {
-    box-shadow: var(--shadow-lg);
-  }
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 60s linear infinite; /* Slower speed for readability */
+}
 
-  .gradient-primary {
-    background: var(--gradient-primary);
-  }
-
-  .gradient-risk {
-    background: var(--gradient-risk);
-  }
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
