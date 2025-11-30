@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import LatticeBackground from "@/components/LatticeBackground";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -43,7 +43,8 @@ import {
   Calendar as CalendarIcon,
   CheckCircle2,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Quote
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -68,24 +69,23 @@ export default function LandingPage() {
     }, 1000);
   };
 
-  // Reviews Data
+  // 15 Fake Reviews for Marquee
   const reviews = [
-    {
-      name: "Alex R.",
-      review: "Helped me avoid detention twice this semester. The safe bunk calculator is a life saver!",
-    },
-    {
-      name: "Sarah M.",
-      review: "The timetable auto-import saved so much time. Literally magic. Highly recommend!",
-    },
-    {
-      name: "Rahul K.",
-      review: "I used to track attendance in Excel. This is 100x better and the UI is beautiful.",
-    },
-    {
-      name: "Priya S.",
-      review: "Medical leave tracking is spot on. Finally I know my exact percentage accurately.",
-    }
+    { name: "Alex R.", role: "CSE Student", review: "Helped me avoid detention twice this semester. The safe bunk calculator is a life saver!", color: "text-blue-400" },
+    { name: "Sarah M.", role: "BBA Student", review: "The timetable auto-import saved so much time. Literally magic. Highly recommend!", color: "text-purple-400" },
+    { name: "Rahul K.", role: "Engineering", review: "I used to track attendance in Excel. This is 100x better and the UI is beautiful.", color: "text-green-400" },
+    { name: "Priya S.", role: "Medical Student", review: "Medical leave tracking is spot on. Finally I know my exact percentage accurately.", color: "text-orange-400" },
+    { name: "Jason D.", role: "Law Student", review: "The notifications saved me from debarment. The best attendance app out there.", color: "text-red-400" },
+    { name: "Emily W.", role: "Psychology", review: "Stress level went down 100%. I know exactly when I can sleep in.", color: "text-pink-400" },
+    { name: "Michael B.", role: "Civil Eng", review: "Simple, fast, and looks amazing on dark mode. Love the universe theme!", color: "text-blue-300" },
+    { name: "Lisa T.", role: "Arts", review: "Calculates everything for me. I just check the dashboard once a week.", color: "text-yellow-400" },
+    { name: "David H.", role: "MBA", review: "Professional grade tracking. The analytics view helps me plan my semester leaves.", color: "text-indigo-400" },
+    { name: "Jessica L.", role: "Biotech", review: "Setup took like 30 seconds with the timetable image upload.", color: "text-teal-400" },
+    { name: "Tom P.", role: "History", review: "No more manual math. It tells me 'You can bunk 3 more' and that's all I need.", color: "text-cyan-400" },
+    { name: "Ryan G.", role: "Physics", review: "The duty leave feature is something no other app has. Essential for sports students.", color: "text-rose-400" },
+    { name: "Anita D.", role: "Chemistry", review: "Works perfectly on my phone. I check it right before deciding to skip a class.", color: "text-violet-400" },
+    { name: "Kevin S.", role: "Mathematics", review: "Accurate to the decimal. I trust this more than my college portal.", color: "text-emerald-400" },
+    { name: "Olivia R.", role: "Economics", review: "Saved my grades. I realized I was at 74% just in time to recover.", color: "text-amber-400" }
   ];
 
   return (
@@ -324,18 +324,44 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* TESTIMONIALS / STUDENT REVIEWS SECTION (Custom 3D Cards) */}
-        <div className="mb-24">
+        {/* STUDENT REVIEWS MARQUEE */}
+        <div className="mb-24 overflow-hidden">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">Student Voices</h2>
-          <div className="flex flex-wrap justify-center gap-8">
-            {reviews.map((review, index) => (
-              <div className="card" key={index}>
-                <div className="card-content">
-                  <p className="card-title">{review.name}</p>
-                  <p className="card-para">{review.review}</p>
+          
+          <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
+            <div className="flex items-center justify-center md:justify-start [&_li]:mx-4 [&_img]:max-w-none animate-marquee">
+              {/* First Copy of Reviews */}
+              {reviews.map((review, index) => (
+                <div key={`1-${index}`} className="mx-4">
+                   <Card className="w-[350px] h-[200px] bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 transition-all shadow-lg flex-shrink-0">
+                    <CardContent className="p-6 flex flex-col gap-4 h-full">
+                      <Quote className={`h-8 w-8 ${review.color} opacity-50`} />
+                      <p className="text-sm text-gray-300 flex-1 leading-relaxed line-clamp-3">"{review.review}"</p>
+                      <div className="pt-4 border-t border-white/5">
+                        <p className={`font-bold ${review.color}`}>{review.name}</p>
+                        <p className="text-xs text-gray-500">{review.role}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </div>
-            ))}
+              ))}
+              
+              {/* Second Copy of Reviews (for seamless looping) */}
+              {reviews.map((review, index) => (
+                <div key={`2-${index}`} className="mx-4">
+                   <Card className="w-[350px] h-[200px] bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 transition-all shadow-lg flex-shrink-0">
+                    <CardContent className="p-6 flex flex-col gap-4 h-full">
+                      <Quote className={`h-8 w-8 ${review.color} opacity-50`} />
+                      <p className="text-sm text-gray-300 flex-1 leading-relaxed line-clamp-3">"{review.review}"</p>
+                      <div className="pt-4 border-t border-white/5">
+                        <p className={`font-bold ${review.color}`}>{review.name}</p>
+                        <p className="text-xs text-gray-500">{review.role}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -461,7 +487,6 @@ export default function LandingPage() {
                 Helping students manage their academic life.
               </p>
             </div>
-            {/* Footer links */}
             <div>
               <h4 className="font-semibold text-sm mb-2 text-gray-300">Product</h4>
               <ul className="text-xs space-y-2 text-gray-500">
