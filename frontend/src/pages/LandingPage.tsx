@@ -24,6 +24,13 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { 
   Bell, 
   ArrowRight, 
@@ -102,16 +109,18 @@ export default function LandingPage() {
     
     // Mock Login Logic
     setTimeout(() => {
-      // For demo, we'll just create a mock user if the email matches "student@university.edu"
-      // In a real app, this would verify against a backend
       if (loginData.email) {
-        const mockUser = {
-            name: "Demo Student",
-            email: loginData.email,
-            course: "Computer Science",
-            universityNumber: "12345678"
-        };
-        localStorage.setItem("user", JSON.stringify(mockUser));
+        const existingUser = localStorage.getItem("user");
+        if (!existingUser) {
+            const mockUser = {
+                name: "Demo Student",
+                email: loginData.email,
+                course: "Computer Science",
+                universityNumber: "12345678"
+            };
+            localStorage.setItem("user", JSON.stringify(mockUser));
+        }
+        
         toast.success("Logged in successfully!");
         navigate("/dashboard");
       } else {
@@ -145,23 +154,38 @@ export default function LandingPage() {
     }, 1500);
   };
 
-  // Reviews Data (15 items for smooth marquee)
+  // Reviews Data
   const reviews = [
-    { name: "Alex R.", role: "CSE Student", review: "Helped me avoid detention twice this semester. The safe bunk calculator is a life saver!", color: "text-blue-400" },
-    { name: "Sarah M.", role: "BBA Student", review: "The timetable auto-import saved so much time. Literally magic. Highly recommend!", color: "text-purple-400" },
-    { name: "Rahul K.", role: "Engineering", review: "I used to track attendance in Excel. This is 100x better and the UI is beautiful.", color: "text-green-400" },
-    { name: "Priya S.", role: "Medical Student", review: "Medical leave tracking is spot on. Finally I know my exact percentage accurately.", color: "text-orange-400" },
-    { name: "Jason D.", role: "Law Student", review: "The notifications saved me from debarment. The best attendance app out there.", color: "text-red-400" },
-    { name: "Emily W.", role: "Psychology", review: "Stress level went down 100%. I know exactly when I can sleep in.", color: "text-pink-400" },
-    { name: "Michael B.", role: "Civil Eng", review: "Simple, fast, and looks amazing on dark mode. Love the universe theme!", color: "text-blue-300" },
-    { name: "Lisa T.", role: "Arts", review: "Calculates everything for me. I just check the dashboard once a week.", color: "text-yellow-400" },
-    { name: "David H.", role: "MBA", review: "Professional grade tracking. The analytics view helps me plan my semester leaves.", color: "text-indigo-400" },
-    { name: "Jessica L.", role: "Biotech", review: "Setup took like 30 seconds with the timetable image upload.", color: "text-teal-400" },
-    { name: "Tom P.", role: "History", review: "No more manual math. It tells me 'You can bunk 3 more' and that's all I need.", color: "text-cyan-400" },
-    { name: "Ryan G.", role: "Physics", review: "The duty leave feature is something no other app has. Essential for sports students.", color: "text-rose-400" },
-    { name: "Anita D.", role: "Chemistry", review: "Works perfectly on my phone. I check it right before deciding to skip a class.", color: "text-violet-400" },
-    { name: "Kevin S.", role: "Mathematics", review: "Accurate to the decimal. I trust this more than my college portal.", color: "text-emerald-400" },
-    { name: "Olivia R.", role: "Economics", review: "Saved my grades. I realized I was at 74% just in time to recover.", color: "text-amber-400" }
+    {
+      name: "Alex R.",
+      role: "CSE Student",
+      review: "Helped me avoid detention twice this semester. The safe bunk calculator is a life saver!",
+      color: "text-blue-400"
+    },
+    {
+      name: "Sarah M.",
+      role: "BBA Student",
+      review: "The timetable auto-import saved so much time. Literally magic. Highly recommend!",
+      color: "text-purple-400"
+    },
+    {
+      name: "Rahul K.",
+      role: "Engineering",
+      review: "I used to track attendance in Excel. This is 100x better and the UI is beautiful.",
+      color: "text-green-400"
+    },
+    {
+      name: "Priya S.",
+      role: "Medical Student",
+      review: "Medical leave tracking is spot on. Finally I know my exact percentage accurately.",
+      color: "text-orange-400"
+    },
+    {
+      name: "Jason D.",
+      role: "Law Student",
+      review: "The notifications saved me from debarment. The best attendance app out there.",
+      color: "text-red-400"
+    }
   ];
 
   return (
@@ -237,6 +261,19 @@ export default function LandingPage() {
                 <Button variant="outline" size="lg" className="hover:bg-white/10 hover:scale-105 transition-all gap-2 backdrop-blur-sm bg-white/5 text-white border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
                   <Play className="h-4 w-4" /> Watch Demo
                 </Button>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="flex flex-wrap gap-4 text-xs font-medium text-gray-400 pt-4">
+                <span className="flex items-center gap-1 bg-green-900/20 px-2 py-1 rounded text-green-300 border border-green-500/20">
+                  <Lock className="h-3 w-3" /> SSL Secured
+                </span>
+                <span className="flex items-center gap-1 bg-blue-900/20 px-2 py-1 rounded text-blue-300 border border-blue-500/20">
+                  <Zap className="h-3 w-3" /> AI Enhanced
+                </span>
+                <span className="flex items-center gap-1 bg-purple-900/20 px-2 py-1 rounded text-purple-300 border border-purple-500/20">
+                  <Star className="h-3 w-3" /> 5k+ Students
+                </span>
               </div>
             </div>
           </div>
@@ -379,65 +416,211 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* STUDENT REVIEWS MARQUEE */}
-        <div className="mb-24 overflow-hidden">
+        {/* STUDENT REVIEWS (CAROUSEL) */}
+        <div className="mb-24">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">Student Voices</h2>
-          
-          <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
-            <div className="flex items-center justify-center md:justify-start [&_li]:mx-4 [&_img]:max-w-none animate-marquee">
-              {/* Reviews repeated twice for marquee effect */}
-              {[...reviews, ...reviews].map((review, index) => (
-                <div key={index} className="mx-4">
-                   <Card className="w-[350px] h-[200px] bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 transition-all shadow-lg flex-shrink-0">
-                    <CardContent className="p-6 flex flex-col gap-4 h-full">
-                      <Quote className={`h-8 w-8 ${review.color} opacity-50`} />
-                      <p className="text-sm text-gray-300 flex-1 leading-relaxed line-clamp-3">"{review.review}"</p>
-                      <div className="pt-4 border-t border-white/5">
-                        <p className={`font-bold ${review.color}`}>{review.name}</p>
-                        <p className="text-xs text-gray-500">{review.role}</p> 
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+          <Carousel
+            opts={{
+              align: "start",
+            }}
+            className="w-full max-w-5xl mx-auto"
+          >
+            <CarouselContent>
+              {reviews.map((review, index) => (
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                  <div className="p-1 h-full">
+                    <Card className="bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg h-full">
+                      <CardContent className="p-6 flex flex-col gap-4 h-full">
+                        <Quote className={`h-8 w-8 ${review.color} opacity-50`} />
+                        <p className="text-sm text-gray-300 flex-1 leading-relaxed">"{review.review}"</p>
+                        <div className="pt-4 border-t border-white/5">
+                          <p className={`font-bold ${review.color}`}>{review.name}</p>
+                          <p className="text-xs text-gray-500">{review.role}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CarouselItem>
               ))}
+            </CarouselContent>
+            <CarouselPrevious className="text-black bg-white/80 hover:bg-white border-0" />
+            <CarouselNext className="text-black bg-white/80 hover:bg-white border-0" />
+          </Carousel>
+        </div>
+
+        {/* Feature Sections */}
+        <div className="grid md:grid-cols-2 gap-8 mb-24">
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold flex items-center gap-2 text-white">
+              <Bell className="h-5 w-5 text-blue-400" /> Smart Alerts
+            </h3>
+            <Card className="bg-orange-950/30 border-orange-500/30 backdrop-blur-sm shadow-[0_0_20px_rgba(249,115,22,0.1)]">
+              <CardContent className="p-4 flex gap-4 items-start">
+                <AlertTriangle className="h-5 w-5 text-orange-500 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-sm text-orange-200">Attendance Risk Alert</p>
+                  <p className="text-xs text-orange-300/80 mt-1">
+                    Your attendance in DBMS is approaching the danger zone (78%). Consider attending the next 2 lectures.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold flex items-center gap-2 text-white">
+              <Upload className="h-5 w-5 text-blue-400" /> Seamless Integrations
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors shadow-sm hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+                <ImageIcon className="h-5 w-5 text-blue-400" />
+                <div className="text-sm">
+                  <p className="font-medium text-gray-200">OCR Import</p>
+                  <p className="text-xs text-gray-500">Upload Image</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors shadow-sm hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+                <FileText className="h-5 w-5 text-red-400" />
+                <div className="text-sm">
+                  <p className="font-medium text-gray-200">PDF Parser</p>
+                  <p className="text-xs text-gray-500">Drag & Drop</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors shadow-sm hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+                <CalendarIcon className="h-5 w-5 text-green-400" />
+                <div className="text-sm">
+                  <p className="font-medium text-gray-200">G-Calendar</p>
+                  <p className="text-xs text-gray-500">Sync Events</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 opacity-60">
+                <GraduationCap className="h-5 w-5 text-purple-400" />
+                <div className="text-sm">
+                  <p className="font-medium text-gray-200">Portal Sync</p>
+                  <p className="text-xs text-gray-500">Coming Soon</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Footer... (Standard footer structure) */}
-         <footer className="border-t border-white/10 bg-black/80 backdrop-blur-md mt-auto relative z-10">
-          <div className="container mx-auto px-4 py-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="col-span-2 md:col-span-1">
-                <h3 className="font-bold mb-2 flex items-center gap-2 text-white">
-                  <GraduationCap className="h-4 w-4 text-blue-400" /> Attendance Guardian
-                </h3>
-                <p className="text-xs text-gray-500">
-                  Helping students manage their academic life.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm mb-2 text-gray-300">Product</h4>
-                <ul className="text-xs space-y-2 text-gray-500">
-                  <li className="hover:text-blue-400 cursor-pointer transition-colors">Features</li>
-                  <li className="hover:text-blue-400 cursor-pointer transition-colors">Pricing</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm mb-2 text-gray-300">Legal</h4>
-                <ul className="text-xs space-y-2 text-gray-500">
-                  <li className="hover:text-blue-400 cursor-pointer transition-colors">Privacy</li>
-                  <li className="hover:text-blue-400 cursor-pointer transition-colors">Terms</li>
-                </ul>
-              </div>
-            </div>
-            <div className="mt-8 pt-4 border-t border-white/10 text-center text-xs text-gray-600">
-              <p>© 2024 Attendance Guardian. All rights reserved.</p>
-            </div>
+        {/* Feature Comparison (Glass Table) */}
+        <div className="mb-24">
+          <h2 className="text-3xl font-bold text-center mb-12 text-white">Why Choose Us?</h2>
+          <div className="overflow-x-auto rounded-xl border border-white/10 shadow-[0_0_30px_rgba(255,255,255,0.05)] bg-black/40 backdrop-blur-md">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-white/5 uppercase text-xs text-gray-400">
+                <tr>
+                  <th className="px-6 py-4 font-bold">Feature</th>
+                  <th className="px-6 py-4 text-center">Others</th>
+                  <th className="px-6 py-4 text-center text-blue-400 font-bold bg-blue-500/10">Attendance Guardian</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 text-gray-300">
+                {[
+                  "Smart Risk Prediction", "Duty/Medical Leave Support", "Timetable OCR Import", "Multi-Subject Analytics", "Safe Bunk Calculator"
+                ].map((feature, i) => (
+                  <tr key={i} className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-4 font-medium">{feature}</td>
+                    <td className="px-6 py-4 text-center text-gray-600"><XCircle className="h-5 w-5 mx-auto" /></td>
+                    <td className="px-6 py-4 text-center text-green-400 bg-blue-500/5"><CheckCircle2 className="h-5 w-5 mx-auto" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </footer>
+        </div>
+
+        {/* College/Global Stats - ADDED BACK */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-24 text-center">
+          <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/30 transition-colors">
+            <p className="text-3xl font-bold text-blue-400 mb-1">82%</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">Avg. Attendance</p>
+          </div>
+          <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-purple-500/30 transition-colors">
+            <p className="text-3xl font-bold text-purple-400 mb-1">Friday</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">Most Bunked Day</p>
+          </div>
+          <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-green-500/30 transition-colors">
+            <p className="text-3xl font-bold text-green-400 mb-1">12k+</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">Leaves Tracked</p>
+          </div>
+          <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-orange-500/30 transition-colors">
+            <p className="text-3xl font-bold text-orange-400 mb-1">Zero</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">Detentions (User Avg)</p>
+          </div>
+        </div>
+
+        {/* FAQ */}
+        <div className="max-w-2xl mx-auto mb-24">
+          <h2 className="text-2xl font-bold text-center mb-8 text-white">Frequently Asked Questions</h2>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="item-1" className="border-b border-white/10">
+              <AccordionTrigger className="text-gray-200 hover:text-white">How is the risk score calculated?</AccordionTrigger>
+              <AccordionContent className="text-gray-400">
+                We use a weighted algorithm that considers your current percentage, remaining classes in the semester, and your college's minimum requirement.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-2" className="border-b border-white/10">
+              <AccordionTrigger className="text-gray-200 hover:text-white">Does it store my college login?</AccordionTrigger>
+              <AccordionContent className="text-gray-400">
+                No! We are privacy-first. You don't need to link your college portal. You simply upload your timetable or enter data manually.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-3" className="border-b border-white/10">
+              <AccordionTrigger className="text-gray-200 hover:text-white">Can I track Medical Leaves?</AccordionTrigger>
+              <AccordionContent className="text-gray-400">
+                Yes, you can mark specific days as "Medical Leave" or "Duty Leave". These are calculated differently based on your college's policy settings.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
 
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 bg-black/80 backdrop-blur-md mt-auto relative z-10">
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="col-span-2 md:col-span-1">
+              <h3 className="font-bold mb-2 flex items-center gap-2 text-white">
+                <GraduationCap className="h-4 w-4 text-blue-400" /> Attendance Guardian
+              </h3>
+              <p className="text-xs text-gray-500">
+                Helping students manage their academic life.
+              </p>
+            </div>
+            {/* Footer links */}
+            <div>
+              <h4 className="font-semibold text-sm mb-2 text-gray-300">Product</h4>
+              <ul className="text-xs space-y-2 text-gray-500">
+                <li className="hover:text-blue-400 cursor-pointer transition-colors">Features</li>
+                <li className="hover:text-blue-400 cursor-pointer transition-colors">Pricing</li>
+                <li className="hover:text-blue-400 cursor-pointer transition-colors">Integrations</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm mb-2 text-gray-300">Support</h4>
+              <ul className="text-xs space-y-2 text-gray-500">
+                <li className="hover:text-blue-400 cursor-pointer transition-colors">Help Center</li>
+                <li className="hover:text-blue-400 cursor-pointer transition-colors">Contact Us</li>
+                <li className="hover:text-blue-400 cursor-pointer transition-colors">Status</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm mb-2 text-gray-300">Legal</h4>
+              <ul className="text-xs space-y-2 text-gray-500">
+                <li className="hover:text-blue-400 cursor-pointer transition-colors">Privacy Policy</li>
+                <li className="hover:text-blue-400 cursor-pointer transition-colors">Terms of Service</li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 pt-4 border-t border-white/10 text-center text-xs text-gray-600">
+            <p>© 2024 Attendance Guardian. All rights reserved.</p>
+            <p>v1.2.0 (Beta)</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
