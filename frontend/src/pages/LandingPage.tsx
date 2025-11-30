@@ -68,6 +68,26 @@ export default function LandingPage() {
     }, 1000);
   };
 
+  // Reviews Data
+  const reviews = [
+    {
+      name: "Alex R.",
+      review: "Helped me avoid detention twice this semester. The safe bunk calculator is a life saver!",
+    },
+    {
+      name: "Sarah M.",
+      review: "The timetable auto-import saved so much time. Literally magic. Highly recommend!",
+    },
+    {
+      name: "Rahul K.",
+      review: "I used to track attendance in Excel. This is 100x better and the UI is beautiful.",
+    },
+    {
+      name: "Priya S.",
+      review: "Medical leave tracking is spot on. Finally I know my exact percentage accurately.",
+    }
+  ];
+
   return (
     <div className="min-h-screen text-white overflow-x-hidden relative font-sans selection:bg-purple-500/30">
       
@@ -199,7 +219,7 @@ export default function LandingPage() {
 
           <div className="flex flex-col items-center lg:items-end animate-in slide-in-from-right-10 duration-700 fade-in delay-200 space-y-6">
             
-            {/* Login Card (Cosmic Glass) */}
+            {/* Login Card */}
             <Card className="w-full max-w-md border border-white/10 bg-black/60 backdrop-blur-2xl ring-1 ring-white/10 relative overflow-hidden group shadow-[0_0_40px_rgba(255,255,255,0.05)] hover:shadow-[0_0_50px_rgba(255,255,255,0.1)] transition-all duration-500">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
               
@@ -272,7 +292,7 @@ export default function LandingPage() {
               </CardContent>
             </Card>
 
-            {/* Subject Snapshot Preview (Levitating) */}
+            {/* Subject Snapshot */}
             <div className="w-full max-w-md bg-black/40 backdrop-blur-md rounded-xl p-4 border border-white/10 shadow-[0_0_30px_rgba(255,255,255,0.08)] animate-pulse-slow hover:-translate-y-1 transition-transform duration-500">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-xs font-semibold uppercase text-gray-400">Live Snapshot</span>
@@ -304,9 +324,21 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Feature Sections, FAQ, and Footer follow the same style... */}
-        {/* ... (Include rest of the Landing Page features like Features, FAQ, Footer) */}
-        
+        {/* TESTIMONIALS / STUDENT REVIEWS SECTION (Custom 3D Cards) */}
+        <div className="mb-24">
+          <h2 className="text-3xl font-bold text-center mb-12 text-white">Student Voices</h2>
+          <div className="flex flex-wrap justify-center gap-8">
+            {reviews.map((review, index) => (
+              <div className="card" key={index}>
+                <div className="card-content">
+                  <p className="card-title">{review.name}</p>
+                  <p className="card-para">{review.review}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Feature Sections */}
         <div className="grid md:grid-cols-2 gap-8 mb-24">
           <div className="space-y-4">
