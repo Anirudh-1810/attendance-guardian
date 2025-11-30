@@ -9,6 +9,7 @@ import Attendance from "./pages/Attendance";
 import SubjectDetail from "./pages/SubjectDetail";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +22,12 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              {/* Landing Page as default route */}
+              <Route path="/" element={<LandingPage />} />
+              
+              {/* Dashboard moved to its own route */}
+              <Route path="/dashboard" element={<Dashboard />} />
+              
               <Route path="/attendance" element={<Attendance />} />
               <Route path="/subject/:id" element={<SubjectDetail />} />
               <Route path="/settings" element={<Settings />} />

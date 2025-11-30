@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { GraduationCap, Plus, Calendar, CheckCircle2, AlertTriangle, TrendingUp } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
+import { GraduationCap, Plus, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useAttendanceData } from "@/hooks/useAttendanceData";
 import { calculateStatus, calculateBunks, calculateMustAttend } from "@/lib/calculations";
 import AddSubjectDialog from "@/components/AddSubjectDialog";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from "recharts";
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line } from "recharts";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -21,35 +21,8 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Header */}
-      <header className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-4 py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
-                <GraduationCap className="h-7 w-7 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Attendance Guardian
-                </h1>
-                <p className="text-sm text-muted-foreground">Track Smart, Stay Ahead</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => navigate("/attendance")}
-                variant="outline"
-                className="gap-2"
-              >
-                <Calendar className="h-4 w-4" />
-                Mark Today
-              </Button>
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Replaced hardcoded header with Navbar */}
+      <Navbar />
 
       <main className="container mx-auto px-4 py-8">
         {/* Stats Overview */}
@@ -97,8 +70,6 @@ export default function Dashboard() {
             </Card>
           </div>
         )}
-
-
 
         {/* Subjects Section */}
         <div className="space-y-6">
@@ -326,10 +297,7 @@ export default function Dashboard() {
                 />
                 
                 {/* Dynamic lines for each subject */}
-                {subjects.map((subject, index) => {
-                  const currentPct = Math.round(
-                    (subject.attendedClasses / subject.totalClasses) * 100
-                  );
+                {subjects.map((subject) => {
                   const status = calculateStatus(subject);
                   
                   // Color based on status
