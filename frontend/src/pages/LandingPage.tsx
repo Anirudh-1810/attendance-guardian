@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
-import LatticeBackground from "@/components/LatticeBackground";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,16 +30,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { 
-  Bell, 
-  ArrowRight, 
-  Upload, 
-  Eye, 
-  EyeOff, 
-  Play, 
-  Star, 
-  Lock, 
-  Zap, 
+import {
+  Bell,
+  ArrowRight,
+  Upload,
+  Eye,
+  EyeOff,
+  Play,
+  Star,
+  Lock,
+  Zap,
   GraduationCap,
   MessageCircle,
   Mic,
@@ -84,7 +83,7 @@ export default function LandingPage() {
   useEffect(() => {
     const hour = new Date().getHours();
     const timeGreeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
-    
+
     // Check if user is already logged in
     const user = localStorage.getItem("user");
     if (user) {
@@ -106,25 +105,25 @@ export default function LandingPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Mock Login Logic
     setTimeout(() => {
       if (loginData.email) {
         const existingUser = localStorage.getItem("user");
         if (!existingUser) {
-            const mockUser = {
-                name: "Demo Student",
-                email: loginData.email,
-                course: "Computer Science",
-                universityNumber: "12345678"
-            };
-            localStorage.setItem("user", JSON.stringify(mockUser));
+          const mockUser = {
+            name: "Demo Student",
+            email: loginData.email,
+            course: "Computer Science",
+            universityNumber: "12345678"
+          };
+          localStorage.setItem("user", JSON.stringify(mockUser));
         }
-        
+
         toast.success("Logged in successfully!");
         navigate("/dashboard");
       } else {
-          toast.error("Please enter an email");
+        toast.error("Please enter an email");
       }
       setIsLoading(false);
     }, 1000);
@@ -132,10 +131,10 @@ export default function LandingPage() {
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (signupData.password !== signupData.confirmPassword) {
-        toast.error("Passwords do not match!");
-        return;
+      toast.error("Passwords do not match!");
+      return;
     }
 
     setIsLoading(true);
@@ -146,7 +145,7 @@ export default function LandingPage() {
         course: signupData.course,
         universityNumber: signupData.universityNumber
       };
-      
+
       localStorage.setItem("user", JSON.stringify(newUser));
       toast.success("Account created successfully!");
       navigate("/dashboard");
@@ -190,9 +189,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen text-white overflow-x-hidden relative font-sans selection:bg-purple-500/30">
-      
-      {/* ANIMATED LATTICE BACKGROUND */}
-      <LatticeBackground />
+
 
       {/* Sticky Benefit Bar */}
       <div className="bg-black/60 text-white/90 text-center py-2 text-xs font-semibold tracking-wide backdrop-blur-md border-b border-white/10 sticky top-0 z-[60]">
@@ -202,7 +199,7 @@ export default function LandingPage() {
       <Navbar />
 
       <main className="container mx-auto px-4 py-12 relative z-10">
-        
+
         {/* HERO SECTION */}
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-24">
           <div className="space-y-8 animate-in slide-in-from-left-10 duration-700 fade-in">
@@ -210,14 +207,14 @@ export default function LandingPage() {
               <Badge variant="outline" className="py-1 px-3 border-white/20 text-white bg-white/5 backdrop-blur-md shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                 ✨ New: AI-Powered Risk Analysis
               </Badge>
-              
+
               <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-purple-200 drop-shadow-sm">
                 {greeting} <br />
                 <span className="text-3xl md:text-5xl text-gray-300 font-normal">
                   Ready to check your risk?
                 </span>
               </h1>
-              
+
               <p className="text-lg text-gray-300 leading-relaxed max-w-lg drop-shadow-md">
                 Your academic safety net. We calculate safe bunks, track leaves, and alert you before you hit the detention list.
               </p>
@@ -235,10 +232,10 @@ export default function LandingPage() {
                       <span>Missed Classes</span>
                       <span className="font-bold text-red-400">{calcClasses[0]}</span>
                     </div>
-                    <Slider 
-                      defaultValue={[10]} 
-                      max={30} 
-                      step={1} 
+                    <Slider
+                      defaultValue={[10]}
+                      max={30}
+                      step={1}
                       onValueChange={setCalcClasses}
                       className="py-2"
                     />
@@ -255,7 +252,7 @@ export default function LandingPage() {
               {/* CTAs */}
               <div className="flex flex-wrap gap-4 pt-2">
                 <Button size="lg" onClick={() => navigate('/dashboard')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 hover:scale-105 transition-all shadow-[0_0_20px_rgba(79,70,229,0.4)] text-white border-0">
-                    Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
 
                 <Button variant="outline" size="lg" className="hover:bg-white/10 hover:scale-105 transition-all gap-2 backdrop-blur-sm bg-white/5 text-white border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
@@ -279,11 +276,11 @@ export default function LandingPage() {
           </div>
 
           <div className="flex flex-col items-center lg:items-end animate-in slide-in-from-right-10 duration-700 fade-in delay-200 space-y-6">
-            
+
             {/* Login/Signup Card */}
             <Card className="w-full max-w-md border border-white/10 bg-black/60 backdrop-blur-2xl ring-1 ring-white/10 relative overflow-hidden group shadow-[0_0_40px_rgba(255,255,255,0.05)] hover:shadow-[0_0_50px_rgba(255,255,255,0.1)] transition-all duration-500">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
-              
+
               <CardHeader className="text-center space-y-1">
                 <CardTitle className="text-2xl font-bold text-white">Welcome Back</CardTitle>
                 <CardDescription className="text-gray-400">Enter details to track attendance</CardDescription>
@@ -294,16 +291,16 @@ export default function LandingPage() {
                     <TabsTrigger value="login" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400">Login</TabsTrigger>
                     <TabsTrigger value="signup" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400">Sign Up</TabsTrigger>
                   </TabsList>
-                  
+
                   <TabsContent value="login" className="space-y-4">
                     <form onSubmit={handleLogin} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-gray-300">Email</Label>
-                        <Input 
-                          id="email" 
-                          type="email" 
-                          placeholder="student@university.edu" 
-                          required 
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="student@university.edu"
+                          required
                           value={loginData.email}
                           onChange={handleLoginChange}
                           className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-blue-500/50 focus:ring-blue-500/20"
@@ -315,16 +312,16 @@ export default function LandingPage() {
                           <a href="#" className="text-xs text-blue-400 hover:underline hover:text-blue-300">Forgot?</a>
                         </div>
                         <div className="relative">
-                          <Input 
-                            id="password" 
-                            type={showPassword ? "text" : "password"} 
-                            required 
+                          <Input
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            required
                             value={loginData.password}
                             onChange={handleLoginChange}
                             className="pr-10 bg-white/5 border-white/10 text-white focus:border-blue-500/50 focus:ring-blue-500/20"
                           />
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
                           >
@@ -344,10 +341,10 @@ export default function LandingPage() {
                       <span className="font-bold">G</span> Continue with Google
                     </Button>
                   </TabsContent>
-                  
+
                   <TabsContent value="signup" className="space-y-4">
                     <form onSubmit={handleSignup} className="space-y-4">
-                       <div className="space-y-2">
+                      <div className="space-y-2">
                         <Label htmlFor="name" className="text-gray-300">Full Name</Label>
                         <Input id="name" placeholder="John Doe" required value={signupData.name} onChange={handleSignupChange} className="bg-white/5 border-white/10 text-white" />
                       </div>
@@ -370,7 +367,7 @@ export default function LandingPage() {
                           <Label htmlFor="password" className="text-gray-300">Password</Label>
                           <Input id="password" type="password" required value={signupData.password} onChange={handleSignupChange} className="bg-white/5 border-white/10 text-white" />
                         </div>
-                         <div className="space-y-2">
+                        <div className="space-y-2">
                           <Label htmlFor="confirmPassword" className="text-gray-300">Confirm</Label>
                           <Input id="confirmPassword" type="password" required value={signupData.confirmPassword} onChange={handleSignupChange} className="bg-white/5 border-white/10 text-white" />
                         </div>

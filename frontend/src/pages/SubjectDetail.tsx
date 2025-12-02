@@ -9,14 +9,14 @@ import { useAttendanceData } from "@/hooks/useAttendanceData";
 import { calculateStatus, calculateBunks, calculateMustAttend } from "@/lib/calculations";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
 import WhatIfCalculator from "@/components/WhatIfCalculator";
-import { Navbar } from "@/components/Navbar"; 
+import { Navbar } from "@/components/Navbar";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line } from "recharts";
 
 export default function SubjectDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { getSubject } = useAttendanceData();
-  
+
   const subject = getSubject(Number(id));
 
   if (!subject) {
@@ -43,9 +43,9 @@ export default function SubjectDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-transparent text-foreground relative z-10">
       <Navbar />
-      
+
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-16 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
@@ -110,49 +110,49 @@ export default function SubjectDetail() {
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
+              <AreaChart
                 data={Array.from({ length: 8 }, (_, i) => ({
-                    week: `Week ${i + 1}`,
-                    attendance: Math.min(100, Math.max(0, attendancePct + (Math.random() * 10 - 5))),
-                    required: subject.requiredPercentage
+                  week: `Week ${i + 1}`,
+                  attendance: Math.min(100, Math.max(0, attendancePct + (Math.random() * 10 - 5))),
+                  required: subject.requiredPercentage
                 }))}
-                >
+              >
                 <defs>
-                    <linearGradient id="colorAttendanceArea" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorAttendanceArea" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
                     <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1} />
-                    </linearGradient>
+                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="week" stroke="#6b7280" fontSize={12} />
                 <YAxis stroke="#6b7280" fontSize={12} domain={[0, 100]} />
                 <Tooltip
-                    contentStyle={{
+                  contentStyle={{
                     backgroundColor: "white",
                     border: "1px solid #e5e7eb",
                     borderRadius: "8px",
                     padding: "12px",
-                    }}
+                  }}
                 />
                 <Legend />
                 <Area
-                    type="monotone"
-                    dataKey="attendance"
-                    stroke="#3b82f6"
-                    strokeWidth={3}
-                    fill="url(#colorAttendanceArea)"
-                    name="Attendance %"
+                  type="monotone"
+                  dataKey="attendance"
+                  stroke="#3b82f6"
+                  strokeWidth={3}
+                  fill="url(#colorAttendanceArea)"
+                  name="Attendance %"
                 />
                 <Line
-                    type="monotone"
-                    dataKey="required"
-                    stroke="#ef4444"
-                    strokeWidth={2}
-                    strokeDasharray="5 5"
-                    dot={false}
-                    name="Required %"
+                  type="monotone"
+                  dataKey="required"
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  name="Required %"
                 />
-                </AreaChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>

@@ -37,10 +37,47 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-transparent text-foreground relative z-10">
       <Navbar />
 
       <main className="container mx-auto px-4 py-8">
+        {/* Student Details Header */}
+        <div className="mb-8 p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white shadow-lg">
+                {JSON.parse(localStorage.getItem("user") || "{}").name?.charAt(0) || "S"}
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">
+                  {JSON.parse(localStorage.getItem("user") || "{}").name || "Student"}
+                </h1>
+                <div className="flex flex-wrap gap-3 mt-1 text-sm text-gray-300">
+                  <span className="flex items-center gap-1">
+                    <GraduationCap className="h-4 w-4 text-blue-400" />
+                    {JSON.parse(localStorage.getItem("user") || "{}").course || "Course Not Set"}
+                  </span>
+                  <span className="hidden md:inline text-gray-600">•</span>
+                  <span className="flex items-center gap-1">
+                    <span className="text-purple-400">ID:</span>
+                    {JSON.parse(localStorage.getItem("user") || "{}").universityNumber || "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 w-full md:w-auto">
+              <div className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-center flex-1 md:flex-none">
+                <p className="text-xs text-gray-400 uppercase">Sem</p>
+                <p className="font-bold text-white">5</p>
+              </div>
+              <div className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-center flex-1 md:flex-none">
+                <p className="text-xs text-gray-400 uppercase">Section</p>
+                <p className="font-bold text-white">A</p>
+              </div>
+            </div>
+          </div>
+        </div>
         {/* Stats Overview */}
         {subjects.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -162,33 +199,33 @@ export default function Dashboard() {
                     className={`p-6 cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative group ${config.bg} ${config.border} border-2`}
                     onClick={() => navigate(`/subject/${subject.id}`)}
                   >
-                     {/* Delete Button (Visible on hover) */}
-                     <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                             <Button variant="destructive" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={(e) => e.stopPropagation()}>
-                               <Trash2 className="h-4 w-4" />
-                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will permanently delete {subject.name} and all its attendance data.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={(e) => handleDeleteSubject(subject.id, e)}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                     </div>
+                    {/* Delete Button (Visible on hover) */}
+                    <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={(e) => e.stopPropagation()}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete {subject.name} and all its attendance data.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={(e) => handleDeleteSubject(subject.id, e)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
 
                     <div className="space-y-4">
                       {/* Header */}
@@ -246,40 +283,40 @@ export default function Dashboard() {
         {/* Stock-Style Attendance Comparison */}
         {subjects.length > 0 && (
           <Card className="p-6 shadow-lg mt-8 bg-card text-card-foreground">
-             <div className="mb-6">
+            <div className="mb-6">
               <h2 className="text-2xl font-bold mb-2">Attendance Performance</h2>
               <p className="text-muted-foreground">Track all subjects like stocks</p>
             </div>
             <div className="h-[400px] w-full">
-             <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={Array.from({ length: 10 }, (_, i) => ({
                     week: `W${i + 1}`,
                     ...subjects.reduce((acc, sub) => ({
                       ...acc,
-                      [sub.code]: Math.min(100, Math.max(0, Math.round((sub.attendedClasses/sub.totalClasses)*100) + (Math.random()*10-5)))
+                      [sub.code]: Math.min(100, Math.max(0, Math.round((sub.attendedClasses / sub.totalClasses) * 100) + (Math.random() * 10 - 5)))
                     }), {})
                   }))}
                 >
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                   <XAxis dataKey="week" className="text-xs" />
                   <YAxis domain={[0, 100]} className="text-xs" />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                   />
                   <Legend />
                   {subjects.map((subject, index) => (
-                    <Line 
+                    <Line
                       key={subject.id}
-                      type="monotone" 
-                      dataKey={subject.code} 
+                      type="monotone"
+                      dataKey={subject.code}
                       stroke={`hsl(${index * 60}, 70%, 50%)`}
                       strokeWidth={2}
                       dot={false}
                     />
                   ))}
                 </LineChart>
-             </ResponsiveContainer>
+              </ResponsiveContainer>
             </div>
           </Card>
         )}
