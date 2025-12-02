@@ -66,13 +66,17 @@ export function Navbar() {
                 </Badge>
               </Link>
             </nav>
-            
+
             <div className="h-6 w-px bg-border hidden md:block" />
-            
+
             <div className="flex items-center gap-2">
-              {!isDashboard && (
+              {!isDashboard ? (
                 <Link to="/dashboard" className="md:hidden">
                   <Button size="sm" variant="outline">Dashboard</Button>
+                </Link>
+              ) : (
+                <Link to="/" className="md:hidden">
+                  <Button size="sm" variant="outline">Home</Button>
                 </Link>
               )}
               <ThemeToggle />
@@ -108,9 +112,9 @@ export function Navbar() {
                 </DropdownMenu>
               ) : (
                 <div className="flex gap-2">
-                   <Link to="/">
-                      <Button size="sm" className="hidden md:flex bg-gradient-to-r from-blue-600 to-purple-600 text-white">Login</Button>
-                   </Link>
+                  <Link to="/">
+                    <Button size="sm" className="hidden md:flex bg-gradient-to-r from-blue-600 to-purple-600 text-white">Login</Button>
+                  </Link>
                 </div>
               )}
             </div>
