@@ -4,7 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, BookOpen, User, Calendar as CalendarIcon, Calculator, TrendingUp } from "lucide-react";
+import { ArrowLeft, BookOpen, User, Calendar as CalendarIcon, Calculator, TrendingUp, Edit, CheckCircle2, XCircle, Ban, Plus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useAttendanceData } from "@/hooks/useAttendanceData";
 import { calculateStatus, calculateBunks, calculateMustAttend } from "@/lib/calculations";
 import AttendanceCalendar from "@/components/AttendanceCalendar";
@@ -16,6 +22,8 @@ export default function SubjectDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { getSubject } = useAttendanceData();
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const subject = getSubject(Number(id));
 
@@ -49,7 +57,6 @@ export default function SubjectDetail() {
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-16 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-            {/* UPDATED: Navigate back to Dashboard */}
             <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -60,6 +67,15 @@ export default function SubjectDetail() {
               </div>
               <p className="text-sm text-muted-foreground">{subject.code}</p>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => setShowEditDialog(true)}
+            >
+              <Edit className="h-4 w-4" />
+              Edit
+            </Button>
             <div className={`h-3 w-3 rounded-full ${statusColors[status]}`} />
           </div>
         </div>
@@ -157,27 +173,90 @@ export default function SubjectDetail() {
           </div>
         </Card>
 
-        {/* Tabs */}
-        <Tabs defaultValue="calendar" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
-            <TabsTrigger value="calendar">
-              <CalendarIcon className="h-4 w-4 mr-2" />
-              Calendar
-            </TabsTrigger>
-            <TabsTrigger value="whatif">
-              <Calculator className="h-4 w-4 mr-2" />
-              What If
-            </TabsTrigger>
-          </TabsList>
+        {/* Action Buttons */}
+        <div className="flex gap-4">
+          <Button 
+            onClick={() => setShowCalendar(true)}
+            className="flex-1 gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          >
+            <CalendarIcon className="h-5 w-5" />
+            View Attendance Calendar
+          </Button>
+        </div>
 
-          <TabsContent value="calendar">
+        {/* What If Calculator */}
+        <WhatIfCalculator subject={{ ...subject, id: String(subject.id) }} />
+
+        {/* Calendar Dialog */}
+        <Dialog open={showCalendar} onOpenChange={setShowCalendar}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">Attendance Calendar - {subject.name}</DialogTitle>
+            </DialogHeader>
             <AttendanceCalendar subject={{ ...subject, id: String(subject.id) }} />
-          </TabsContent>
+          </DialogContent>
+        </Dialog>
 
-          <TabsContent value="whatif">
-            <WhatIfCalculator subject={{ ...subject, id: String(subject.id) }} />
-          </TabsContent>
-        </Tabs>
+        {/* Edit Subject Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Subject Details</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Subject Name</label>
+                <input 
+                  type="text" 
+                  defaultValue={subject.name}
+                  className="w-full px-3 py-2 border rounded-md bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Subject Code</label>
+                <input 
+                  type="text" 
+                  defaultValue={subject.code}
+                  className="w-full px-3 py-2 border rounded-md bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Teacher Name</label>
+                <input 
+                  type="text" 
+                  defaultValue={subject.teacher}
+                  className="w-full px-3 py-2 border rounded-md bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Required Percentage</label>
+                <input 
+                  type="number" 
+                  defaultValue={subject.requiredPercentage}
+                  className="w-full px-3 py-2 border rounded-md bg-background"
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setShowEditDialog(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600"
+                  onClick={() => {
+                    // TODO: Implement save logic
+                    setShowEditDialog(false);
+                  }}
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );

@@ -14,6 +14,7 @@ import { ArrowRight, ArrowLeft, Check } from "lucide-react";
 import { format } from "date-fns";
 import { useAttendanceData } from "@/hooks/useAttendanceData";
 import { toast } from "sonner";
+import CircularTimePicker from "@/components/CircularTimePicker";
 
 interface AddSubjectDialogProps {
   open: boolean;
@@ -301,55 +302,49 @@ export default function AddSubjectDialog({ open, onOpenChange }: AddSubjectDialo
                 )}
               </div>
 
-              {/* Time and Weightage */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="time">Class Time *</Label>
-                  <div className="relative">
-                    <Input
-                      id="time"
-                      type="time"
-                      value={tempTime}
-                      onChange={(e) => setTempTime(e.target.value)}
-                      className="text-lg font-medium h-12 pl-4 pr-4"
-                    />
-                  </div>
-                </div>
+              {/* Circular Time Picker */}
+              <div className="space-y-3">
+                <Label>Class Time *</Label>
+                <CircularTimePicker
+                  value={tempTime}
+                  onChange={setTempTime}
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="weightage">Weightage</Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-12 w-12"
-                      onClick={() => setTempWeightage(Math.max(1, tempWeightage - 1))}
-                    >
-                      -
-                    </Button>
-                    <Input
-                      id="weightage"
-                      type="number"
-                      min="1"
-                      value={tempWeightage}
-                      onChange={(e) => setTempWeightage(parseInt(e.target.value) || 1)}
-                      className="text-center text-lg font-bold h-12"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-12 w-12"
-                      onClick={() => setTempWeightage(tempWeightage + 1)}
-                    >
-                      +
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    How many attendance units per class
-                  </p>
+              {/* Weightage */}
+              <div className="space-y-2">
+                <Label htmlFor="weightage">Weightage</Label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-12 w-12"
+                    onClick={() => setTempWeightage(Math.max(1, tempWeightage - 1))}
+                  >
+                    -
+                  </Button>
+                  <Input
+                    id="weightage"
+                    type="number"
+                    min="1"
+                    value={tempWeightage}
+                    onChange={(e) => setTempWeightage(parseInt(e.target.value) || 1)}
+                    className="text-center text-lg font-bold h-12"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-12 w-12"
+                    onClick={() => setTempWeightage(tempWeightage + 1)}
+                  >
+                    +
+                  </Button>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  How many attendance units per class
+                </p>
               </div>
 
               {/* Add Button */}
@@ -427,9 +422,10 @@ export default function AddSubjectDialog({ open, onOpenChange }: AddSubjectDialo
                     type="number"
                     min="0"
                     max="100"
-                    value={formData.requiredAttendance}
+                    placeholder="e.g., 75"
+                    value={formData.requiredAttendance || ""}
                     onChange={(e) =>
-                      updateFormData({ requiredAttendance: parseInt(e.target.value) || 75 })
+                      updateFormData({ requiredAttendance: parseInt(e.target.value) || 0 })
                     }
                     className="mt-1"
                   />
@@ -442,7 +438,8 @@ export default function AddSubjectDialog({ open, onOpenChange }: AddSubjectDialo
                       id="maxDL"
                       type="number"
                       min="0"
-                      value={formData.maxDL}
+                      placeholder="Optional"
+                      value={formData.maxDL || ""}
                       onChange={(e) => updateFormData({ maxDL: parseInt(e.target.value) || 0 })}
                       className="mt-1"
                     />
@@ -454,7 +451,8 @@ export default function AddSubjectDialog({ open, onOpenChange }: AddSubjectDialo
                       id="maxML"
                       type="number"
                       min="0"
-                      value={formData.maxML}
+                      placeholder="Optional"
+                      value={formData.maxML || ""}
                       onChange={(e) => updateFormData({ maxML: parseInt(e.target.value) || 0 })}
                       className="mt-1"
                     />
@@ -482,7 +480,8 @@ export default function AddSubjectDialog({ open, onOpenChange }: AddSubjectDialo
                     type="number"
                     min="0"
                     max="100"
-                    value={formData.currentAttendance}
+                    placeholder="e.g., 85"
+                    value={formData.currentAttendance || ""}
                     onChange={(e) =>
                       updateFormData({ currentAttendance: parseInt(e.target.value) || 0 })
                     }
@@ -501,7 +500,8 @@ export default function AddSubjectDialog({ open, onOpenChange }: AddSubjectDialo
                       type="number"
                       min="0"
                       max={formData.maxDL}
-                      value={formData.currentDL}
+                      placeholder="Optional"
+                      value={formData.currentDL || ""}
                       onChange={(e) =>
                         updateFormData({ currentDL: parseInt(e.target.value) || 0 })
                       }
@@ -516,7 +516,8 @@ export default function AddSubjectDialog({ open, onOpenChange }: AddSubjectDialo
                       type="number"
                       min="0"
                       max={formData.maxML}
-                      value={formData.currentML}
+                      placeholder="Optional"
+                      value={formData.currentML || ""}
                       onChange={(e) =>
                         updateFormData({ currentML: parseInt(e.target.value) || 0 })
                       }

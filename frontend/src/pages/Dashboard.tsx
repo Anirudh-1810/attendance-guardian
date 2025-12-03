@@ -8,7 +8,7 @@ import { GraduationCap, Plus, CheckCircle2, AlertTriangle, Trash2 } from "lucide
 import { useAttendanceData } from "@/hooks/useAttendanceData";
 import { calculateStatus, calculateBunks, calculateMustAttend } from "@/lib/calculations";
 import AddSubjectDialog from "@/components/AddSubjectDialog";
-import { ResponsiveContainer, Legend, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
+import { ResponsiveContainer, Legend, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, BarChart, Bar, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -230,7 +230,7 @@ export default function Dashboard() {
                     <div className="space-y-4">
                       {/* Header */}
                       <div className="flex items-start justify-between">
-                        <div className="flex-1 pr-8">
+                        <div className="flex-1">
                           <h3 className="font-bold text-xl mb-1 truncate">{subject.name}</h3>
                           <p className="text-sm text-muted-foreground font-medium">
                             {subject.code}
@@ -239,21 +239,31 @@ export default function Dashboard() {
                             {subject.teacher}
                           </p>
                         </div>
-                        <div
-                          className={`h-12 w-12 rounded-xl bg-gradient-to-br ${config.gradient} flex items-center justify-center text-white font-bold text-lg shadow-lg shrink-0`}
-                        >
-                          {attendancePct}%
-                        </div>
                       </div>
 
-                      {/* Progress */}
-                      <div className="space-y-2">
-                        <Progress value={attendancePct} className="h-3 bg-black/10 dark:bg-white/10" />
+                      {/* Horizontal Progress Bar with Stats */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1">
+                            <div className="relative h-8 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full bg-gradient-to-r ${config.gradient} transition-all duration-500 flex items-center justify-center`}
+                                style={{ width: `${attendancePct}%` }}
+                              >
+                                <span className="text-white text-xs font-bold">{attendancePct}%</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right min-w-[80px]">
+                            <p className="text-sm font-bold">{subject.attendedClasses}/{subject.totalClasses}</p>
+                            <p className="text-xs text-muted-foreground">classes</p>
+                          </div>
+                        </div>
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>
-                            {subject.attendedClasses}/{subject.totalClasses} classes
-                          </span>
                           <span>Required: {subject.requiredPercentage}%</span>
+                          <span className={attendancePct >= subject.requiredPercentage ? "text-green-600" : "text-red-600"}>
+                            {attendancePct >= subject.requiredPercentage ? "✓ Safe" : "⚠ At Risk"}
+                          </span>
                         </div>
                       </div>
 
@@ -280,45 +290,140 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Stock-Style Attendance Comparison */}
+        {/* Analytics Section */}
         {subjects.length > 0 && (
-          <Card className="p-6 shadow-lg mt-8 bg-card text-card-foreground">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold mb-2">Attendance Performance</h2>
-              <p className="text-muted-foreground">Track all subjects like stocks</p>
-            </div>
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={Array.from({ length: 10 }, (_, i) => ({
-                    week: `W${i + 1}`,
-                    ...subjects.reduce((acc, sub) => ({
-                      ...acc,
-                      [sub.code]: Math.min(100, Math.max(0, Math.round((sub.attendedClasses / sub.totalClasses) * 100) + (Math.random() * 10 - 5)))
-                    }), {})
-                  }))}
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="week" className="text-xs" />
-                  <YAxis domain={[0, 100]} className="text-xs" />
-                  <Tooltip
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                  />
-                  <Legend />
-                  {subjects.map((subject, index) => (
-                    <Line
-                      key={subject.id}
-                      type="monotone"
-                      dataKey={subject.code}
-                      stroke={`hsl(${index * 60}, 70%, 50%)`}
-                      strokeWidth={2}
-                      dot={false}
+          <div className="space-y-6 mt-8">
+            {/* Line Chart - Attendance Performance */}
+            <Card className="p-6 shadow-lg bg-card text-card-foreground">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold mb-2">Attendance Performance</h2>
+                <p className="text-muted-foreground">Track all subjects over time</p>
+              </div>
+              <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={Array.from({ length: 10 }, (_, i) => ({
+                      week: `W${i + 1}`,
+                      ...subjects.reduce((acc, sub) => ({
+                        ...acc,
+                        [sub.code]: Math.min(100, Math.max(0, Math.round((sub.attendedClasses / sub.totalClasses) * 100) + (Math.random() * 10 - 5)))
+                      }), {})
+                    }))}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="week" className="text-xs" />
+                    <YAxis domain={[0, 100]} className="text-xs" />
+                    <Tooltip
+                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                     />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
+                    <Legend />
+                    {subjects.map((subject, index) => (
+                      <Line
+                        key={subject.id}
+                        type="monotone"
+                        dataKey={subject.code}
+                        stroke={`hsl(${index * 60}, 70%, 50%)`}
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            {/* Bar Chart and Pie Chart Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Bar Chart - Classes Comparison */}
+              <Card className="p-6 shadow-lg bg-card text-card-foreground">
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold mb-2">Classes Comparison</h2>
+                  <p className="text-sm text-muted-foreground">Attended vs Total classes</p>
+                </div>
+                <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={subjects.map(sub => ({
+                        name: sub.code,
+                        attended: sub.attendedClasses,
+                        missed: sub.totalClasses - sub.attendedClasses
+                      }))}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="name" className="text-xs" />
+                      <YAxis className="text-xs" />
+                      <Tooltip
+                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                      />
+                      <Legend />
+                      <Bar dataKey="attended" fill="#10b981" name="Attended" />
+                      <Bar dataKey="missed" fill="#ef4444" name="Missed" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              {/* Pie Chart - Attendance Distribution */}
+              <Card className="p-6 shadow-lg bg-card text-card-foreground">
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold mb-2">Attendance Distribution</h2>
+                  <p className="text-sm text-muted-foreground">Overall attendance breakdown</p>
+                </div>
+                <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={subjects.map((sub, index) => ({
+                          name: sub.code,
+                          value: sub.attendedClasses,
+                          fill: `hsl(${index * 60}, 70%, 50%)`
+                        }))}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        dataKey="value"
+                      >
+                        {subjects.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={`hsl(${index * 60}, 70%, 50%)`} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
             </div>
-          </Card>
+
+            {/* Radar Chart - Subject Performance */}
+            <Card className="p-6 shadow-lg bg-card text-card-foreground">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold mb-2">Subject Performance Radar</h2>
+                <p className="text-sm text-muted-foreground">Multi-dimensional view of your attendance</p>
+              </div>
+              <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart
+                    data={subjects.map(sub => ({
+                      subject: sub.code,
+                      attendance: Math.round((sub.attendedClasses / sub.totalClasses) * 100),
+                      required: sub.requiredPercentage,
+                      fullMark: 100
+                    }))}
+                  >
+                    <PolarGrid />
+                    <PolarAngleAxis dataKey="subject" />
+                    <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                    <Radar name="Current" dataKey="attendance" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
+                    <Radar name="Required" dataKey="required" stroke="#ef4444" fill="#ef4444" fillOpacity={0.3} />
+                    <Legend />
+                    <Tooltip />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </div>
         )}
       </main>
 

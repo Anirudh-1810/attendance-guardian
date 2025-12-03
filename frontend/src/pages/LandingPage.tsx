@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
+import { HomeNavbar } from "@/components/HomeNavbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -237,7 +237,7 @@ export default function LandingPage() {
         🚀 95% Prediction Accuracy | Works with Image Timetables | Supports DL/ML | Calculates Safe Bunks
       </div>
 
-      <Navbar />
+      <HomeNavbar />
 
       <main className="container mx-auto px-4 py-12 relative z-10">
 
@@ -249,8 +249,8 @@ export default function LandingPage() {
                 ✨ New: AI-Powered Risk Analysis
               </Badge>
 
-              <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-purple-200 drop-shadow-sm">
-                <span className="neon-text">{greeting}</span> <br />
+              <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight drop-shadow-sm">
+                <span className="text-white">{greeting}</span> <br />
                 <span className="text-3xl md:text-5xl text-gray-300 font-normal">
                   Ready to check your risk?
                 </span>
