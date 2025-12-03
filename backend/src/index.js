@@ -17,12 +17,12 @@ app.use(cors());
 app.use(express.json());
 
 // routes
-app.use('/auth', authRoutes);
-app.use('/semesters', semesterRoutes);
-app.use('/courses', courseRoutes);
-app.use('/class', classRoutes);
-app.use('/holiday', holidayRoutes);
-app.use('/stats', statsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/semesters', semesterRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/class', classRoutes);
+app.use('/api/holiday', holidayRoutes);
+app.use('/api/stats', statsRoutes);
 
 const PORT = process.env.PORT || 4000;
 

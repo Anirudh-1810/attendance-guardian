@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-const BASE_URL = 'http://localhost:4000';
+const BASE_URL = 'http://localhost:3001';
 
 async function testSignup() {
     console.log('\n=== Testing Signup ===');

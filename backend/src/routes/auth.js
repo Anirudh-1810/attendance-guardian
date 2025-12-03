@@ -4,6 +4,11 @@ const jwt = require('jsonwebtoken');
 const prisma = require('../prisma');
 
 const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+
+if (!process.env.JWT_SECRET) {
+  console.warn('JWT_SECRET env var not set. Falling back to insecure dev-secret.');
+}
 
 // POST /auth/signup
 router.post('/signup', async (req, res) => {
@@ -31,11 +36,7 @@ router.post('/signup', async (req, res) => {
       data: { name, email, password: hash },
     });
 
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
 
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
@@ -66,11 +67,7 @@ router.post('/login', async (req, res) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(400).json({ message: 'Invalid credentials' });
 
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
 
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {

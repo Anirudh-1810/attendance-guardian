@@ -66,3 +66,4 @@ model Holiday {
   semesterId String
   semester   Semester @relation(fields: [semesterId], references: [id])
 }
+
