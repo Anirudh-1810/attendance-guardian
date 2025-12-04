@@ -112,30 +112,30 @@ export default function LandingPage() {
   };
 
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLoginData({ ...loginData, [e.target.id]: e.target.value });
+    setLoginData({ ...loginData, [e.target.name]: e.target.value });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Client-side validation - ensure required fields are filled
     if (!loginData.email || !loginData.password) {
       toast.error("Please fill in all required fields");
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       // Call real API login endpoint
       const response = await apiLogin({
         email: loginData.email,
         password: loginData.password
       });
-      
+
       // Store auth data using AuthContext
       authLogin(response.token, response.user);
-      
+
       toast.success("Logged in successfully!");
       navigate("/dashboard");
     } catch (error) {
@@ -156,13 +156,13 @@ export default function LandingPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Client-side validation - ensure required fields are filled
     if (!signupData.name || !signupData.email || !signupData.password || !signupData.confirmPassword) {
       toast.error("Please fill in all required fields");
       return;
     }
-    
+
     // Client-side validation for password matching
     if (signupData.password !== signupData.confirmPassword) {
       toast.error("Passwords do not match!");
@@ -170,7 +170,7 @@ export default function LandingPage() {
     }
 
     setIsLoading(true);
-    
+
     try {
       // Send only name, email, and password to backend (exclude course and universityNumber)
       const response = await signup({
@@ -178,10 +178,10 @@ export default function LandingPage() {
         email: signupData.email,
         password: signupData.password
       });
-      
+
       // Store auth data using AuthContext
       authLogin(response.token, response.user);
-      
+
       toast.success("Account created successfully!");
       navigate("/dashboard");
     } catch (error) {
@@ -383,6 +383,7 @@ export default function LandingPage() {
                         <Label htmlFor="email" className="text-gray-300">Email</Label>
                         <Input
                           id="login-email"
+                          name="email"
                           type="email"
                           placeholder="student@university.edu"
                           required
@@ -399,6 +400,7 @@ export default function LandingPage() {
                         <div className="relative">
                           <Input
                             id="password"
+                            name="password"
                             type={showPassword ? "text" : "password"}
                             required
                             value={loginData.password}
