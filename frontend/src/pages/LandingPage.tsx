@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
-import LatticeBackground from "@/components/LatticeBackground";
+import { HomeNavbar } from "@/components/HomeNavbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,16 +30,16 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { 
-  Bell, 
-  ArrowRight, 
-  Upload, 
-  Eye, 
-  EyeOff, 
-  Play, 
-  Star, 
-  Lock, 
-  Zap, 
+import {
+  Bell,
+  ArrowRight,
+  Upload,
+  Eye,
+  EyeOff,
+  Play,
+  Star,
+  Lock,
+  Zap,
   GraduationCap,
   MessageCircle,
   Mic,
@@ -51,7 +50,10 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
-  Quote
+  Quote,
+  Instagram,
+  Linkedin,
+  Twitter
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -94,7 +96,7 @@ export default function LandingPage() {
   useEffect(() => {
     const hour = new Date().getHours();
     const timeGreeting = hour < 12 ? "Good Morning" : hour < 18 ? "Good Afternoon" : "Good Evening";
-    
+
     // Check if user is already logged in
     const user = localStorage.getItem("user");
     if (user) {
@@ -201,52 +203,88 @@ export default function LandingPage() {
   // Reviews Data
   const reviews = [
     {
-      name: "Alex R.",
-      role: "CSE Student",
+      name: "Aarav S.",
+      role: "CSE, Chitkara University",
       review: "Helped me avoid detention twice this semester. The safe bunk calculator is a life saver!",
       color: "text-blue-400"
     },
     {
-      name: "Sarah M.",
-      role: "BBA Student",
+      name: "Meera K.",
+      role: "BBA, Panjab University",
       review: "The timetable auto-import saved so much time. Literally magic. Highly recommend!",
       color: "text-purple-400"
     },
     {
-      name: "Rahul K.",
-      role: "Engineering",
+      name: "Rohan G.",
+      role: "Engineering, Chandigarh University",
       review: "I used to track attendance in Excel. This is 100x better and the UI is beautiful.",
       color: "text-green-400"
     },
     {
       name: "Priya S.",
-      role: "Medical Student",
+      role: "Medical, GMCH 32",
       review: "Medical leave tracking is spot on. Finally I know my exact percentage accurately.",
       color: "text-orange-400"
     },
     {
-      name: "Jason D.",
-      role: "Law Student",
+      name: "Jaspreet Singh",
+      role: "Law, PU",
       review: "The notifications saved me from debarment. The best attendance app out there.",
       color: "text-red-400"
+    },
+    {
+      name: "Ananya M.",
+      role: "B.Com, SD College",
+      review: "Simple, fast, and accurate. Exactly what I needed for my attendance tracking.",
+      color: "text-pink-400"
+    },
+    {
+      name: "Vikram R.",
+      role: "B.Tech, Thapar University",
+      review: "The UI is so clean and the dark mode is perfect. Love using this app.",
+      color: "text-cyan-400"
+    },
+    {
+      name: "Neha D.",
+      role: "MBA, UBS",
+      review: "Keeps me organized with my busy schedule. A must-have for every student.",
+      color: "text-yellow-400"
     }
   ];
 
+  const handleGetStarted = () => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      navigate('/dashboard');
+    } else {
+      toast.error("Please log in to continue", {
+        description: "You need an account to access the dashboard.",
+        action: {
+          label: "Login",
+          onClick: () => document.getElementById('login-email')?.focus()
+        }
+      });
+      // Scroll to login section
+      const loginSection = document.getElementById('login-card');
+      if (loginSection) {
+        loginSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen text-white overflow-x-hidden relative font-sans selection:bg-purple-500/30">
-      
-      {/* ANIMATED LATTICE BACKGROUND */}
-      <LatticeBackground />
+
 
       {/* Sticky Benefit Bar */}
       <div className="bg-black/60 text-white/90 text-center py-2 text-xs font-semibold tracking-wide backdrop-blur-md border-b border-white/10 sticky top-0 z-[60]">
         🚀 95% Prediction Accuracy | Works with Image Timetables | Supports DL/ML | Calculates Safe Bunks
       </div>
 
-      <Navbar />
+      <HomeNavbar />
 
       <main className="container mx-auto px-4 py-12 relative z-10">
-        
+
         {/* HERO SECTION */}
         <div className="grid lg:grid-cols-2 gap-16 items-center mb-24">
           <div className="space-y-8 animate-in slide-in-from-left-10 duration-700 fade-in">
@@ -254,14 +292,14 @@ export default function LandingPage() {
               <Badge variant="outline" className="py-1 px-3 border-white/20 text-white bg-white/5 backdrop-blur-md shadow-[0_0_15px_rgba(255,255,255,0.1)]">
                 ✨ New: AI-Powered Risk Analysis
               </Badge>
-              
-              <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-purple-200 drop-shadow-sm">
-                {greeting} <br />
+
+              <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight drop-shadow-sm">
+                <span className="text-white">{greeting}</span> <br />
                 <span className="text-3xl md:text-5xl text-gray-300 font-normal">
                   Ready to check your risk?
                 </span>
               </h1>
-              
+
               <p className="text-lg text-gray-300 leading-relaxed max-w-lg drop-shadow-md">
                 Your academic safety net. We calculate safe bunks, track leaves, and alert you before you hit the detention list.
               </p>
@@ -279,10 +317,10 @@ export default function LandingPage() {
                       <span>Missed Classes</span>
                       <span className="font-bold text-red-400">{calcClasses[0]}</span>
                     </div>
-                    <Slider 
-                      defaultValue={[10]} 
-                      max={30} 
-                      step={1} 
+                    <Slider
+                      defaultValue={[10]}
+                      max={30}
+                      step={1}
                       onValueChange={setCalcClasses}
                       className="py-2"
                     />
@@ -298,8 +336,8 @@ export default function LandingPage() {
 
               {/* CTAs */}
               <div className="flex flex-wrap gap-4 pt-2">
-                <Button size="lg" onClick={() => navigate('/dashboard')} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 hover:scale-105 transition-all shadow-[0_0_20px_rgba(79,70,229,0.4)] text-white border-0">
-                    Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                <Button size="lg" onClick={handleGetStarted} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 hover:scale-105 transition-all shadow-[0_0_20px_rgba(79,70,229,0.4)] text-white border-0">
+                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
 
                 <Button variant="outline" size="lg" className="hover:bg-white/10 hover:scale-105 transition-all gap-2 backdrop-blur-sm bg-white/5 text-white border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
@@ -323,11 +361,11 @@ export default function LandingPage() {
           </div>
 
           <div className="flex flex-col items-center lg:items-end animate-in slide-in-from-right-10 duration-700 fade-in delay-200 space-y-6">
-            
+
             {/* Login/Signup Card */}
-            <Card className="w-full max-w-md border border-white/10 bg-black/60 backdrop-blur-2xl ring-1 ring-white/10 relative overflow-hidden group shadow-[0_0_40px_rgba(255,255,255,0.05)] hover:shadow-[0_0_50px_rgba(255,255,255,0.1)] transition-all duration-500">
+            <Card id="login-card" className="w-full max-w-md border border-white/10 bg-black/60 backdrop-blur-2xl ring-1 ring-white/10 relative overflow-hidden group shadow-[0_0_40px_rgba(255,255,255,0.05)] hover:shadow-[0_0_50px_rgba(255,255,255,0.1)] transition-all duration-500">
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
-              
+
               <CardHeader className="text-center space-y-1">
                 <CardTitle className="text-2xl font-bold text-white">Welcome Back</CardTitle>
                 <CardDescription className="text-gray-400">Enter details to track attendance</CardDescription>
@@ -338,16 +376,16 @@ export default function LandingPage() {
                     <TabsTrigger value="login" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400">Login</TabsTrigger>
                     <TabsTrigger value="signup" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400">Sign Up</TabsTrigger>
                   </TabsList>
-                  
+
                   <TabsContent value="login" className="space-y-4">
                     <form onSubmit={handleLogin} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-gray-300">Email</Label>
-                        <Input 
-                          id="email" 
-                          type="email" 
-                          placeholder="student@university.edu" 
-                          required 
+                        <Input
+                          id="login-email"
+                          type="email"
+                          placeholder="student@university.edu"
+                          required
                           value={loginData.email}
                           onChange={handleLoginChange}
                           className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-blue-500/50 focus:ring-blue-500/20"
@@ -359,16 +397,16 @@ export default function LandingPage() {
                           <a href="#" className="text-xs text-blue-400 hover:underline hover:text-blue-300">Forgot?</a>
                         </div>
                         <div className="relative">
-                          <Input 
-                            id="password" 
-                            type={showPassword ? "text" : "password"} 
-                            required 
+                          <Input
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            required
                             value={loginData.password}
                             onChange={handleLoginChange}
                             className="pr-10 bg-white/5 border-white/10 text-white focus:border-blue-500/50 focus:ring-blue-500/20"
                           />
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
                           >
@@ -388,10 +426,10 @@ export default function LandingPage() {
                       <span className="font-bold">G</span> Continue with Google
                     </Button>
                   </TabsContent>
-                  
+
                   <TabsContent value="signup" className="space-y-4">
                     <form onSubmit={handleSignup} className="space-y-4">
-                       <div className="space-y-2">
+                      <div className="space-y-2">
                         <Label htmlFor="name" className="text-gray-300">Full Name</Label>
                         <Input id="name" placeholder="John Doe" required value={signupData.name} onChange={handleSignupChange} className="bg-white/5 border-white/10 text-white" />
                       </div>
@@ -414,7 +452,7 @@ export default function LandingPage() {
                           <Label htmlFor="password" className="text-gray-300">Password</Label>
                           <Input id="password" type="password" required value={signupData.password} onChange={handleSignupChange} className="bg-white/5 border-white/10 text-white" />
                         </div>
-                         <div className="space-y-2">
+                        <div className="space-y-2">
                           <Label htmlFor="confirmPassword" className="text-gray-300">Confirm</Label>
                           <Input id="confirmPassword" type="password" required value={signupData.confirmPassword} onChange={handleSignupChange} className="bg-white/5 border-white/10 text-white" />
                         </div>
@@ -460,36 +498,26 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* STUDENT REVIEWS (CAROUSEL) */}
-        <div className="mb-24">
+        {/* STUDENT REVIEWS (MARQUEE) */}
+        <div className="mb-24 overflow-hidden">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">Student Voices</h2>
-          <Carousel
-            opts={{
-              align: "start",
-            }}
-            className="w-full max-w-5xl mx-auto"
-          >
-            <CarouselContent>
-              {reviews.map((review, index) => (
-                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                  <div className="p-1 h-full">
-                    <Card className="bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg h-full">
-                      <CardContent className="p-6 flex flex-col gap-4 h-full">
-                        <Quote className={`h-8 w-8 ${review.color} opacity-50`} />
-                        <p className="text-sm text-gray-300 flex-1 leading-relaxed">"{review.review}"</p>
-                        <div className="pt-4 border-t border-white/5">
-                          <p className={`font-bold ${review.color}`}>{review.name}</p>
-                          <p className="text-xs text-gray-500">{review.role}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </CarouselItem>
+
+          <div className="relative w-full">
+            <div className="flex gap-6 animate-marquee w-max hover:[animation-play-state:paused]">
+              {[...reviews, ...reviews].map((review, index) => (
+                <Card key={index} className="w-[350px] shrink-0 bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 shadow-lg">
+                  <CardContent className="p-6 flex flex-col gap-4 h-full">
+                    <Quote className={`h-8 w-8 ${review.color} opacity-50`} />
+                    <p className="text-sm text-gray-300 flex-1 leading-relaxed">"{review.review}"</p>
+                    <div className="pt-4 border-t border-white/5">
+                      <p className={`font-bold ${review.color}`}>{review.name}</p>
+                      <p className="text-xs text-gray-500">{review.role}</p>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
-            </CarouselContent>
-            <CarouselPrevious className="text-black bg-white/80 hover:bg-white border-0" />
-            <CarouselNext className="text-black bg-white/80 hover:bg-white border-0" />
-          </Carousel>
+            </div>
+          </div>
         </div>
 
         {/* Feature Sections */}
@@ -522,6 +550,7 @@ export default function LandingPage() {
                   <p className="font-medium text-gray-200">OCR Import</p>
                   <p className="text-xs text-gray-500">Upload Image</p>
                 </div>
+                <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-blue-500/10 text-blue-300 border-blue-500/20">COMING SOON</Badge>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors shadow-sm hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]">
                 <FileText className="h-5 w-5 text-red-400" />
@@ -529,6 +558,7 @@ export default function LandingPage() {
                   <p className="font-medium text-gray-200">PDF Parser</p>
                   <p className="text-xs text-gray-500">Drag & Drop</p>
                 </div>
+                <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-blue-500/10 text-blue-300 border-blue-500/20">COMING SOON</Badge>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors shadow-sm hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]">
                 <CalendarIcon className="h-5 w-5 text-green-400" />
@@ -536,6 +566,7 @@ export default function LandingPage() {
                   <p className="font-medium text-gray-200">G-Calendar</p>
                   <p className="text-xs text-gray-500">Sync Events</p>
                 </div>
+                <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-blue-500/10 text-blue-300 border-blue-500/20">COMING SOON</Badge>
               </div>
               <div className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/5 opacity-60">
                 <GraduationCap className="h-5 w-5 text-purple-400" />
@@ -618,6 +649,57 @@ export default function LandingPage() {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+        </div>
+
+        {/* About Developers (Marquee) */}
+        <div className="mb-24 overflow-hidden">
+          <h2 className="text-2xl font-bold text-center mb-12 text-white">Meet the Developers</h2>
+
+          <div className="relative w-full">
+            <div className="flex gap-6 animate-marquee w-max hover:[animation-play-state:paused] items-center">
+              {[
+                { name: "Anirudh Sharma", role: "Full Stack Developer", socials: { instagram: "#", linkedin: "#", twitter: "#" } },
+                { name: "Sagar Chhikara", role: "Frontend Developer", socials: { instagram: "#", linkedin: "#", twitter: "#" } },
+                { name: "Bhuvnesh", role: "Backend Developer", socials: { instagram: "#", linkedin: "#", twitter: "#" } },
+                { name: "Chirag Dawra", role: "UI/UX Designer", socials: { instagram: "#", linkedin: "#", twitter: "#" } },
+                { name: "Anirudh Sharma", role: "Full Stack Developer", socials: { instagram: "#", linkedin: "#", twitter: "#" } },
+                { name: "Sagar Chhikara", role: "Frontend Developer", socials: { instagram: "#", linkedin: "#", twitter: "#" } },
+                { name: "Bhuvnesh", role: "Backend Developer", socials: { instagram: "#", linkedin: "#", twitter: "#" } },
+                { name: "Chirag Dawra", role: "UI/UX Designer", socials: { instagram: "#", linkedin: "#", twitter: "#" } }
+              ].map((dev, index) => (
+                <Card key={index} className="w-[350px] shrink-0 bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 group">
+                  <CardContent className="p-4 flex flex-row items-center justify-between gap-4">
+                    <div className="flex flex-col items-start text-left gap-2 flex-1">
+                      <div>
+                        <p className="font-bold text-lg text-white">{dev.name}</p>
+                        <p className="text-xs text-blue-400 font-medium uppercase tracking-wider">{dev.role}</p>
+                      </div>
+
+                      <div className="flex gap-3 mt-1">
+                        <a href={dev.socials.instagram} className="text-gray-400 hover:text-pink-500 transition-colors">
+                          <Instagram className="h-4 w-4" />
+                        </a>
+                        <a href={dev.socials.linkedin} className="text-gray-400 hover:text-blue-500 transition-colors">
+                          <Linkedin className="h-4 w-4" />
+                        </a>
+                        <a href={dev.socials.twitter} className="text-gray-400 hover:text-white transition-colors">
+                          <Twitter className="h-4 w-4" />
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="h-16 w-16 shrink-0 rounded-full overflow-hidden border-2 border-white/20 shadow-lg group-hover:border-blue-500/50 transition-colors">
+                      <img
+                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${dev.name}`}
+                        alt={dev.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         </div>
 
       </main>
