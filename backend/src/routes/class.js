@@ -1,27 +1,26 @@
-import express from 'express';
-import { PrismaClient } from '@prisma/client';
+const express = require('express');
+const prisma = require('../prisma');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Get classes for a subject
 router.get('/', async (req, res) => {
   try {
     const { subjectId, startDate, endDate } = req.query;
-    
+
     const where = { subjectId };
     if (startDate || endDate) {
       where.date = {};
       if (startDate) where.date.gte = new Date(startDate);
       if (endDate) where.date.lte = new Date(endDate);
     }
-    
+
     const classes = await prisma.class.findMany({
       where,
       orderBy: { date: 'asc' },
       include: { subject: true },
     });
-    
+
     res.json(classes);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -33,7 +32,7 @@ router.get('/date/:date', async (req, res) => {
   try {
     const { date } = req.params;
     const { semesterId } = req.query;
-    
+
     const classes = await prisma.class.findMany({
       where: {
         date: new Date(date),
@@ -46,7 +45,7 @@ router.get('/date/:date', async (req, res) => {
       },
       orderBy: { startTime: 'asc' },
     });
-    
+
     res.json(classes);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -58,7 +57,7 @@ router.patch('/:id/attendance', async (req, res) => {
   try {
     const { id } = req.params;
     const { status, notes } = req.body;
-    
+
     const updatedClass = await prisma.class.update({
       where: { id },
       data: {
@@ -67,7 +66,7 @@ router.patch('/:id/attendance', async (req, res) => {
       },
       include: { subject: true },
     });
-    
+
     res.json(updatedClass);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -78,7 +77,7 @@ router.patch('/:id/attendance', async (req, res) => {
 router.post('/bulk-attendance', async (req, res) => {
   try {
     const { updates } = req.body; // [{ id, status, notes }]
-    
+
     const results = await prisma.$transaction(
       updates.map(({ id, status, notes }) =>
         prisma.class.update({
@@ -90,7 +89,7 @@ router.post('/bulk-attendance', async (req, res) => {
         })
       )
     );
-    
+
     res.json(results);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -101,7 +100,7 @@ router.post('/bulk-attendance', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { subjectId, date, dayOfWeek, startTime, endTime, status, notes } = req.body;
-    
+
     const classEntry = await prisma.class.create({
       data: {
         subjectId,
@@ -114,7 +113,7 @@ router.post('/', async (req, res) => {
       },
       include: { subject: true },
     });
-    
+
     res.status(201).json(classEntry);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -125,7 +124,7 @@ router.post('/', async (req, res) => {
 router.post('/bulk', async (req, res) => {
   try {
     const { classes } = req.body;
-    
+
     const created = await prisma.$transaction(
       classes.map(cls =>
         prisma.class.create({
@@ -141,7 +140,7 @@ router.post('/bulk', async (req, res) => {
         })
       )
     );
-    
+
     res.status(201).json(created);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -153,7 +152,7 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { date, dayOfWeek, startTime, endTime, status, notes } = req.body;
-    
+
     const updatedClass = await prisma.class.update({
       where: { id },
       data: {
@@ -166,7 +165,7 @@ router.put('/:id', async (req, res) => {
       },
       include: { subject: true },
     });
-    
+
     res.json(updatedClass);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -184,4 +183,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

@@ -1,8 +1,7 @@
-import express from 'express';
-import { PrismaClient } from '@prisma/client';
+const express = require('express');
+const prisma = require('../prisma');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Get all semesters for a user
 router.get('/', async (req, res) => {
@@ -27,7 +26,7 @@ router.get('/current', async (req, res) => {
   try {
     const userId = req.query.userId || 'default-user';
     const now = new Date();
-    
+
     const semester = await prisma.semester.findFirst({
       where: {
         userId,
@@ -43,7 +42,7 @@ router.get('/current', async (req, res) => {
         holidays: true,
       },
     });
-    
+
     res.json(semester);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -54,7 +53,7 @@ router.get('/current', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { name, startDate, endDate, requiredPercentage, userId } = req.body;
-    
+
     const semester = await prisma.semester.create({
       data: {
         name,
@@ -64,7 +63,7 @@ router.post('/', async (req, res) => {
         userId: userId || 'default-user',
       },
     });
-    
+
     res.status(201).json(semester);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -76,7 +75,7 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, startDate, endDate, requiredPercentage } = req.body;
-    
+
     const semester = await prisma.semester.update({
       where: { id },
       data: {
@@ -86,7 +85,7 @@ router.put('/:id', async (req, res) => {
         ...(requiredPercentage && { requiredPercentage }),
       },
     });
-    
+
     res.json(semester);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -104,4 +103,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

@@ -16,7 +16,7 @@ dist-ssr
 *.local
 
 # Environment
-.env
+
 .env.local
 .env.*.local
 
@@ -33,3 +33,5 @@ dist-ssr
 
 # Vite
 .vite
+.kiro
+.vscode

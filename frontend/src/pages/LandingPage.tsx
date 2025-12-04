@@ -56,12 +56,15 @@ import {
   Twitter
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { signup, login as apiLogin } from "@/api/auth";
 
 export default function LandingPage() {
   const handleAuth = () => {
     // Implement authentication logic here
   };
   const navigate = useNavigate();
+  const { login: authLogin, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [calcClasses, setCalcClasses] = useState([10]);
@@ -82,6 +85,13 @@ export default function LandingPage() {
     email: "",
     password: ""
   });
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -105,55 +115,89 @@ export default function LandingPage() {
     setLoginData({ ...loginData, [e.target.id]: e.target.value });
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Client-side validation - ensure required fields are filled
+    if (!loginData.email || !loginData.password) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
     setIsLoading(true);
-
-    // Mock Login Logic
-    setTimeout(() => {
-      if (loginData.email) {
-        const existingUser = localStorage.getItem("user");
-        if (!existingUser) {
-          const mockUser = {
-            name: "Demo Student",
-            email: loginData.email,
-            course: "Computer Science",
-            universityNumber: "12345678"
-          };
-          localStorage.setItem("user", JSON.stringify(mockUser));
-        }
-
-        toast.success("Logged in successfully!");
-        navigate("/dashboard");
+    
+    try {
+      // Call real API login endpoint
+      const response = await apiLogin({
+        email: loginData.email,
+        password: loginData.password
+      });
+      
+      // Store auth data using AuthContext
+      authLogin(response.token, response.user);
+      
+      toast.success("Logged in successfully!");
+      navigate("/dashboard");
+    } catch (error) {
+      // Handle API errors and display via toast notifications
+      if (error instanceof TypeError) {
+        // Network error
+        toast.error("Connection failed. Please check your internet connection.");
+      } else if (error instanceof Error) {
+        // Extract error message from API response
+        toast.error(error.message);
       } else {
-        toast.error("Please enter an email");
+        toast.error("An unexpected error occurred. Please try again.");
       }
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
+    // Client-side validation - ensure required fields are filled
+    if (!signupData.name || !signupData.email || !signupData.password || !signupData.confirmPassword) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    // Client-side validation for password matching
     if (signupData.password !== signupData.confirmPassword) {
       toast.error("Passwords do not match!");
       return;
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      const newUser = {
+    
+    try {
+      // Send only name, email, and password to backend (exclude course and universityNumber)
+      const response = await signup({
         name: signupData.name,
         email: signupData.email,
-        course: signupData.course,
-        universityNumber: signupData.universityNumber
-      };
-
-      localStorage.setItem("user", JSON.stringify(newUser));
+        password: signupData.password
+      });
+      
+      // Store auth data using AuthContext
+      authLogin(response.token, response.user);
+      
       toast.success("Account created successfully!");
       navigate("/dashboard");
+    } catch (error) {
+      // Handle API errors and display via toast notifications
+      if (error instanceof TypeError) {
+        // Network error
+        toast.error("Connection failed. Please check your internet connection.");
+      } else if (error instanceof Error) {
+        // Extract error message from API response
+        toast.error(error.message);
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   // Reviews Data

@@ -46,7 +46,7 @@ services:
     container_name: attendance-frontend
     restart: unless-stopped
     environment:
-      VITE_API_URL: http://localhost:3001/api
+      VITE_API_URL: http://backend:3001
     ports:
       - "5173:80"
     depends_on:
