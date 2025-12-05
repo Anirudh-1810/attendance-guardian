@@ -25,7 +25,7 @@ export default function SubjectDetail() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
-  const subject = getSubject(Number(id));
+  const subject = getSubject(id!);
 
   if (!subject) {
     return (
@@ -67,9 +67,9 @@ export default function SubjectDetail() {
               </div>
               <p className="text-sm text-muted-foreground">{subject.code}</p>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="gap-2"
               onClick={() => setShowEditDialog(true)}
             >
@@ -175,7 +175,7 @@ export default function SubjectDetail() {
 
         {/* Action Buttons */}
         <div className="flex gap-4">
-          <Button 
+          <Button
             onClick={() => setShowCalendar(true)}
             className="flex-1 gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
@@ -206,45 +206,45 @@ export default function SubjectDetail() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Subject Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   defaultValue={subject.name}
                   className="w-full px-3 py-2 border rounded-md bg-background"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Subject Code</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   defaultValue={subject.code}
                   className="w-full px-3 py-2 border rounded-md bg-background"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Teacher Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   defaultValue={subject.teacher}
                   className="w-full px-3 py-2 border rounded-md bg-background"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Required Percentage</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   defaultValue={subject.requiredPercentage}
                   className="w-full px-3 py-2 border rounded-md bg-background"
                 />
               </div>
               <div className="flex gap-2 pt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="flex-1"
                   onClick={() => setShowEditDialog(false)}
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600"
                   onClick={() => {
                     // TODO: Implement save logic

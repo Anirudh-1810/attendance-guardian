@@ -36,6 +36,7 @@ model UserCourse {
   semester              Semester @relation(fields: [semesterId], references: [id])
   courseCode            String
   courseName            String
+  teacher               String?
   totalClassesConducted Int      @default(0)
   totalClassesAttended  Int      @default(0)
   classesPerWeek        Int
