@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  name      String?
+  password  String
+  semesters Semester[]
+}
+
+model Semester {
+  id                 String       @id @default(uuid())
+  name               String
+  startDate          DateTime
+  endDate            DateTime
+  requiredPercentage Int          @default(75)
+  userId             String
+  user               User         @relation(fields: [userId], references: [id])
+  subjects           UserCourse[]
+  holidays           Holiday[]
+}
+
+model UserCourse {
+  id                    String   @id @default(uuid())
+  semesterId            String
+  semester              Semester @relation(fields: [semesterId], references: [id])
+  courseCode            String
+  courseName            String
+  teacher               String?
+  totalClassesConducted Int      @default(0)
+  totalClassesAttended  Int      @default(0)
+  classesPerWeek        Int
+  maxAllowedAbsences    Int
+  medicalLeavesAllowed  Int      @default(0)
+  dutyLeavesAllowed     Int      @default(0)
+  createdAt             DateTime @default(now())
+  classes               Class[]
+}
+
+model Class {
+  id        String     @id @default(uuid())
+  subjectId String
+  subject   UserCourse @relation(fields: [subjectId], references: [id])
+  date      DateTime
+  dayOfWeek Int?
+  startTime String?
+  endTime   String?
+  status    String     @default("SCHEDULED")
+  notes     String?
+}
+
+model Holiday {
+  id         String   @id @default(uuid())
+  date       DateTime
+  name       String
+  type       String   @default("HOLIDAY")
+  semesterId String
+  semester   Semester @relation(fields: [semesterId], references: [id])
+}
+

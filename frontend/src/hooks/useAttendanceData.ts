@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export interface Subject {
-  id: number;
+  id: string;
   name: string;
   code: string;
   teacher: string;
@@ -13,21 +14,94 @@ export interface Subject {
 const DEFAULT_SUBJECTS: Subject[] = [];
 
 export function useAttendanceData() {
-  // Initialize with function to read from local storage or use default
-  const [subjects, setSubjectsState] = useState<Subject[]>(() => {
+  const { token, isAuthenticated } = useAuth();
+  const [subjects, setSubjectsState] = useState<Subject[]>(DEFAULT_SUBJECTS);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchSubjects = useCallback(async () => {
+    if (!isAuthenticated || !token) return;
+
+    setLoading(true);
     try {
-      const saved = localStorage.getItem("attendance-data");
-      return saved ? JSON.parse(saved) : DEFAULT_SUBJECTS;
-    } catch (e) {
-      return DEFAULT_SUBJECTS;
+      // 1. Get Current Semester
+      const semRes = await fetch("/api/semesters/current", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!semRes.ok) throw new Error("Failed to fetch semester");
+
+      const semester = await semRes.json();
+
+      if (semester && semester.subjects) {
+        // Map backend subjects to frontend format
+        const mappedSubjects: Subject[] = semester.subjects.map((s: any) => ({
+          id: s.id,
+          name: s.courseName,
+          code: s.courseCode,
+          teacher: s.teacher || "Unknown",
+          totalClasses: s.totalClassesConducted,
+          attendedClasses: s.totalClassesAttended,
+          requiredPercentage: s.classesPerWeek ? 75 : 75, // Default or calculated
+        }));
+        setSubjectsState(mappedSubjects);
+      } else {
+        setSubjectsState([]);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-  });
+  }, [isAuthenticated, token]);
 
   useEffect(() => {
-    localStorage.setItem("attendance-data", JSON.stringify(subjects));
-  }, [subjects]);
+    fetchSubjects();
+  }, [fetchSubjects]);
 
-  const updateSubject = (id: number, status: "present" | "absent") => {
+  const addSubject = async (subjectData: Omit<Subject, "id" | "totalClasses" | "attendedClasses"> & { startDate: Date, endDate: Date, classDays: any[] }) => {
+    if (!token) return;
+
+    try {
+      // 1. Ensure Semester Exists (fetch current again to be safe or use cached)
+      const semRes = await fetch("/api/semesters/current", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const semester = await semRes.json();
+
+      if (!semester || !semester.id) throw new Error("No active semester found");
+
+      // 2. Create Course
+      const res = await fetch("/api/courses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          semesterId: semester.id,
+          courseName: subjectData.name,
+          courseCode: subjectData.code,
+          teacher: subjectData.teacher,
+          classesPerWeek: subjectData.classDays.length,
+          maxAllowedAbsences: 0, // Default
+          // Add other fields if needed
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to add subject");
+
+      await fetchSubjects(); // Refresh list
+      return true;
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const updateSubject = (id: string, status: "present" | "absent") => {
+    // Optimistic update - ideally should call API
     setSubjectsState((prev) =>
       prev.map((sub) => {
         if (sub.id !== id) return sub;
@@ -39,20 +113,19 @@ export function useAttendanceData() {
         };
       })
     );
+    // TODO: Implement API call for attendance marking
   };
 
-  const getSubject = (id: number) => subjects.find((s) => s.id === id);
+  const getSubject = (id: string) => subjects.find((s) => s.id === id);
 
+  // Deprecated: setSubjects direct manipulation
   const setSubjects = (newSubjects: Subject[]) => {
     setSubjectsState(newSubjects);
   };
 
   const resetAllData = () => {
-    localStorage.removeItem("attendance-data");
-    localStorage.removeItem("timetable-schedule");
-    localStorage.removeItem("onboarded");
     setSubjectsState(DEFAULT_SUBJECTS);
   };
 
-  return { subjects, updateSubject, getSubject, setSubjects, resetAllData };
+  return { subjects, updateSubject, getSubject, setSubjects, resetAllData, addSubject, loading, error };
 }

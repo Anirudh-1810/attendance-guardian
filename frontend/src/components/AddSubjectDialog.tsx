@@ -34,7 +34,7 @@ const DAYS = [
 ];
 
 export default function AddSubjectDialog({ open, onOpenChange }: AddSubjectDialogProps) {
-  const { subjects, setSubjects } = useAttendanceData();
+  const { addSubject } = useAttendanceData();
   const [step, setStep] = useState<Step>(1);
   const [formData, setFormData] = useState({
     name: "",
@@ -80,25 +80,25 @@ export default function AddSubjectDialog({ open, onOpenChange }: AddSubjectDialo
     if (step > 1) setStep((step - 1) as Step);
   };
 
-  const handleSave = () => {
-    // Calculate total and attended classes based on current attendance percentage
-    const estimatedTotalClasses = formData.classDays.length * 4; // Rough estimate: 4 weeks
-    const attendedClasses = Math.round((formData.currentAttendance / 100) * estimatedTotalClasses);
+  const handleSave = async () => {
+    try {
+      await addSubject({
+        name: formData.name,
+        code: formData.code,
+        teacher: formData.mentor,
+        requiredPercentage: formData.requiredAttendance,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        classDays: formData.classDays,
+      });
 
-    const newSubject = {
-      id: subjects.length > 0 ? Math.max(...subjects.map(s => s.id)) + 1 : 1,
-      name: formData.name,
-      code: formData.code,
-      teacher: formData.mentor,
-      totalClasses: estimatedTotalClasses,
-      attendedClasses: attendedClasses,
-      requiredPercentage: formData.requiredAttendance,
-    };
-
-    setSubjects([...subjects, newSubject]);
-    toast.success(`${formData.name} added successfully!`);
-    onOpenChange(false);
-    resetForm();
+      toast.success(`${formData.name} added successfully!`);
+      onOpenChange(false);
+      resetForm();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to add subject");
+    }
   };
 
   const resetForm = () => {
@@ -130,7 +130,7 @@ export default function AddSubjectDialog({ open, onOpenChange }: AddSubjectDialo
         time: tempTime,
         weightage: tempWeightage,
       }));
-      
+
       updateFormData({
         classDays: [...formData.classDays, ...newClasses],
       });
@@ -157,11 +157,10 @@ export default function AddSubjectDialog({ open, onOpenChange }: AddSubjectDialo
             {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
-                className={`h-2 flex-1 rounded-full transition-all ${
-                  s <= step
+                className={`h-2 flex-1 rounded-full transition-all ${s <= step
                     ? "bg-gradient-to-r from-blue-600 to-purple-600"
                     : "bg-gray-200 dark:bg-gray-700"
-                }`}
+                  }`}
               />
             ))}
           </div>
@@ -273,11 +272,10 @@ export default function AddSubjectDialog({ open, onOpenChange }: AddSubjectDialo
                         key={d.short}
                         type="button"
                         variant={isSelected ? "default" : "outline"}
-                        className={`h-16 text-sm font-medium transition-all ${
-                          isSelected
+                        className={`h-16 text-sm font-medium transition-all ${isSelected
                             ? "bg-gradient-to-br from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                             : ""
-                        }`}
+                          }`}
                         onClick={() => {
                           const days = tempDay ? tempDay.split(",") : [];
                           if (days.includes(d.short)) {

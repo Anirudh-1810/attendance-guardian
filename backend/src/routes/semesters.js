@@ -1,12 +1,13 @@
 const express = require('express');
 const prisma = require('../prisma');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all semesters for a user
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
-    const userId = req.query.userId || 'default-user';
+    const userId = req.user.userId;
     const semesters = await prisma.semester.findMany({
       where: { userId },
       include: {
@@ -22,12 +23,12 @@ router.get('/', async (req, res) => {
 });
 
 // Get current semester
-router.get('/current', async (req, res) => {
+router.get('/current', auth, async (req, res) => {
   try {
-    const userId = req.query.userId || 'default-user';
+    const userId = req.user.userId;
     const now = new Date();
 
-    const semester = await prisma.semester.findFirst({
+    let semester = await prisma.semester.findFirst({
       where: {
         userId,
         startDate: { lte: now },
@@ -43,6 +44,27 @@ router.get('/current', async (req, res) => {
       },
     });
 
+    // Auto-create if no semester exists (as per plan)
+    if (!semester) {
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + 6); // Default 6 months
+
+      semester = await prisma.semester.create({
+        data: {
+          name: "Semester 1",
+          startDate,
+          endDate,
+          requiredPercentage: 75,
+          userId
+        },
+        include: {
+          subjects: { include: { classes: true } },
+          holidays: true
+        }
+      });
+    }
+
     res.json(semester);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -50,9 +72,10 @@ router.get('/current', async (req, res) => {
 });
 
 // Create semester
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
-    const { name, startDate, endDate, requiredPercentage, userId } = req.body;
+    const { name, startDate, endDate, requiredPercentage } = req.body;
+    const userId = req.user.userId;
 
     const semester = await prisma.semester.create({
       data: {
@@ -60,7 +83,7 @@ router.post('/', async (req, res) => {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         requiredPercentage: requiredPercentage || 75,
-        userId: userId || 'default-user',
+        userId,
       },
     });
 
@@ -71,10 +94,15 @@ router.post('/', async (req, res) => {
 });
 
 // Update semester
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, startDate, endDate, requiredPercentage } = req.body;
+    const userId = req.user.userId;
+
+    // Verify ownership
+    const existing = await prisma.semester.findFirst({ where: { id, userId } });
+    if (!existing) return res.status(404).json({ message: 'Semester not found' });
 
     const semester = await prisma.semester.update({
       where: { id },
@@ -93,9 +121,15 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete semester
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user.userId;
+
+    // Verify ownership
+    const existing = await prisma.semester.findFirst({ where: { id, userId } });
+    if (!existing) return res.status(404).json({ message: 'Semester not found' });
+
     await prisma.semester.delete({ where: { id } });
     res.json({ message: 'Semester deleted successfully' });
   } catch (error) {
