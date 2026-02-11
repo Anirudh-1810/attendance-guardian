@@ -13,6 +13,11 @@ jest.mock('../../src/prisma', () => ({
     },
 }));
 
+jest.mock('../../src/middleware/auth', () => (req, res, next) => {
+    req.user = { userId: '1' };
+    next();
+});
+
 const app = express();
 app.use(express.json());
 app.use('/semesters', semesterRoutes);
