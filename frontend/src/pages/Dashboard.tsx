@@ -6,8 +6,11 @@ import { Progress } from "@/components/ui/progress";
 import { Navbar } from "@/components/Navbar";
 import { GraduationCap, Plus, CheckCircle2, AlertTriangle, Trash2 } from "lucide-react";
 import { useAttendanceData } from "@/hooks/useAttendanceData";
-import { calculateStatus, calculateBunks, calculateMustAttend } from "@/lib/calculations";
+import { calculateStatus } from "@/lib/calculations";
+
 import AddSubjectDialog from "@/components/AddSubjectDialog";
+import SubjectCard from "@/components/SubjectCard";
+import OnboardingWizard from "@/components/OnboardingWizard";
 import { ResponsiveContainer, Legend, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, BarChart, Bar, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
 import {
   AlertDialog,
@@ -23,7 +26,7 @@ import {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { subjects, setSubjects } = useAttendanceData();
+  const { subjects, setSubjects, refetch } = useAttendanceData();
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   const totalAttended = subjects.reduce((acc, s) => acc + s.attendedClasses, 0);
@@ -126,166 +129,31 @@ export default function Dashboard() {
 
         {/* Subjects Section */}
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-bold">Your Subjects</h2>
-            <Button
-              onClick={() => setShowAddDialog(true)}
-              size="lg"
-              className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg text-white"
-            >
-              <Plus className="h-5 w-5" />
-              Add Subject
-            </Button>
-          </div>
+          {subjects.length > 0 && (
+            <div className="flex items-center justify-between">
+              <h2 className="text-3xl font-bold">Your Subjects</h2>
+              <Button
+                onClick={() => setShowAddDialog(true)}
+                size="lg"
+                className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg text-white"
+              >
+                <Plus className="h-5 w-5" />
+                Add Subject
+              </Button>
+            </div>
+          )}
 
           {subjects.length === 0 ? (
-            <Card className="p-16 text-center bg-card/50 backdrop-blur-sm border-2 border-dashed">
-              <div className="max-w-md mx-auto space-y-4">
-                <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center mx-auto">
-                  <GraduationCap className="h-12 w-12 text-muted-foreground" />
-                </div>
-                <h3 className="text-2xl font-bold">No Subjects Yet</h3>
-                <p className="text-muted-foreground">
-                  Start tracking your attendance by adding your first subject
-                </p>
-                <Button
-                  onClick={() => setShowAddDialog(true)}
-                  size="lg"
-                  className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                >
-                  <Plus className="h-5 w-5" />
-                  Add Your First Subject
-                </Button>
-              </div>
-            </Card>
+            <OnboardingWizard onComplete={() => refetch()} />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {subjects.map((subject) => {
-                const attendancePct = subject.totalClasses > 0 ? Math.round(
-                  (subject.attendedClasses / subject.totalClasses) * 100
-                ) : 0;
-                const status = calculateStatus(subject);
-                const canBunk = calculateBunks(subject);
-                const mustAttend = calculateMustAttend(subject);
-
-                const statusConfig = {
-                  safe: {
-                    gradient: "from-green-500 to-emerald-600",
-                    bg: "bg-green-50 dark:bg-green-950/30",
-                    border: "border-green-200 dark:border-green-800",
-                  },
-                  warning: {
-                    gradient: "from-yellow-500 to-orange-500",
-                    bg: "bg-yellow-50 dark:bg-yellow-950/30",
-                    border: "border-yellow-200 dark:border-yellow-800",
-                  },
-                  high: {
-                    gradient: "from-orange-500 to-red-500",
-                    bg: "bg-orange-50 dark:bg-orange-950/30",
-                    border: "border-orange-200 dark:border-orange-800",
-                  },
-                  critical: {
-                    gradient: "from-red-500 to-red-700",
-                    bg: "bg-red-50 dark:bg-red-950/30",
-                    border: "border-red-200 dark:border-red-800",
-                  },
-                };
-
-                const config = statusConfig[status];
-
-                return (
-                  <Card
-                    key={subject.id}
-                    className={`p-6 cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative group ${config.bg} ${config.border} border-2`}
-                    onClick={() => navigate(`/subject/${subject.id}`)}
-                  >
-                    {/* Delete Button (Visible on hover) */}
-                    <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="icon" className="h-8 w-8 rounded-full shadow-lg" onClick={(e) => e.stopPropagation()}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete {subject.name} and all its attendance data.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={(e) => handleDeleteSubject(subject.id, e)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-
-                    <div className="space-y-4">
-                      {/* Header */}
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-bold text-xl mb-1 truncate">{subject.name}</h3>
-                          <p className="text-sm text-muted-foreground font-medium">
-                            {subject.code}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {subject.teacher}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Horizontal Progress Bar with Stats */}
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1">
-                            <div className="relative h-8 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full bg-gradient-to-r ${config.gradient} transition-all duration-500 flex items-center justify-center`}
-                                style={{ width: `${attendancePct}%` }}
-                              >
-                                <span className="text-white text-xs font-bold">{attendancePct}%</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-right min-w-[80px]">
-                            <p className="text-sm font-bold">{subject.attendedClasses}/{subject.totalClasses}</p>
-                            <p className="text-xs text-muted-foreground">classes</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>Required: {subject.requiredPercentage}%</span>
-                          <span className={attendancePct >= subject.requiredPercentage ? "text-green-600" : "text-red-600"}>
-                            {attendancePct >= subject.requiredPercentage ? "✓ Safe" : "⚠ At Risk"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Stats */}
-                      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-black/5 dark:border-white/5">
-                        <div className="text-center p-3 rounded-lg bg-white/50 dark:bg-gray-900/50">
-                          <p className="text-xs text-muted-foreground mb-1">Can Bunk</p>
-                          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                            {canBunk}
-                          </p>
-                        </div>
-                        <div className="text-center p-3 rounded-lg bg-white/50 dark:bg-gray-900/50">
-                          <p className="text-xs text-muted-foreground mb-1">Must Attend</p>
-                          <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                            {mustAttend}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
+              {subjects.map((subject) => (
+                <SubjectCard
+                  key={subject.id}
+                  subject={subject}
+                  onDelete={(id, e) => handleDeleteSubject(id as any, e)}
+                />
+              ))}
             </div>
           )}
         </div>

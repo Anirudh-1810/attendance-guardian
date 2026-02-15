@@ -2,12 +2,11 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -29,6 +28,22 @@ model Semester {
   user               User         @relation(fields: [userId], references: [id])
   subjects           UserCourse[]
   holidays           Holiday[]
+  
+  // New fields for onboarding
+  workingDays        String       @default("[]") // JSON string of days [1,2,3,4,5]
+  timetable          TimeTable[]
+}
+
+model TimeTable {
+  id        String   @id @default(uuid())
+  semesterId String
+  semester   Semester @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  subjectId  String?  // Nullable for "Free" slots or unassigned
+  subject    UserCourse? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  dayOfWeek  Int      // 0=Sun, 1=Mon, ..., 6=Sat
+  slot       Int      // 1 to 7 (or more)
+  startTime  String?  // Optional "09:00"
+  endTime    String?  // Optional "10:00"
 }
 
 model UserCourse {
@@ -41,11 +56,13 @@ model UserCourse {
   totalClassesConducted Int      @default(0)
   totalClassesAttended  Int      @default(0)
   classesPerWeek        Int
+  requiredPercentage    Int      @default(75)
   maxAllowedAbsences    Int
   medicalLeavesAllowed  Int      @default(0)
   dutyLeavesAllowed     Int      @default(0)
   createdAt             DateTime @default(now())
   classes               Class[]
+  timetable             TimeTable[]
 }
 
 model Class {

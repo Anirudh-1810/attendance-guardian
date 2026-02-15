@@ -42,7 +42,7 @@ export function useAttendanceData() {
           teacher: s.teacher || "Unknown",
           totalClasses: s.totalClassesConducted,
           attendedClasses: s.totalClassesAttended,
-          requiredPercentage: s.classesPerWeek ? 75 : 75, // Default or calculated
+          requiredPercentage: s.requiredPercentage ?? 75,
         }));
         setSubjectsState(mappedSubjects);
       } else {
@@ -127,5 +127,5 @@ export function useAttendanceData() {
     setSubjectsState(DEFAULT_SUBJECTS);
   };
 
-  return { subjects, updateSubject, getSubject, setSubjects, resetAllData, addSubject, loading, error };
+  return { subjects, updateSubject, getSubject, setSubjects, resetAllData, addSubject, loading, error, refetch: fetchSubjects };
 }

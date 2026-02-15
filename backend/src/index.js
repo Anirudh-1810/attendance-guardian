@@ -6,27 +6,25 @@ dotenv.config();
 
 const authRoutes = require('./routes/auth');
 const semesterRoutes = require('./routes/semesters');
-const courseRoutes = require('./routes/courses');
-const classRoutes = require('./routes/class');
+const coursesRoutes = require('./routes/courses');
+const classesRoutes = require('./routes/class');
 const holidayRoutes = require('./routes/holiday');
 const statsRoutes = require('./routes/stats');
+const onboardingRoutes = require('./routes/onboarding');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// health check
-app.get('/', (req, res) => res.json({ message: 'Attendance Guardian API is running' }));
-app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
-
 // routes
 app.use('/api/auth', authRoutes);
 app.use('/api/semesters', semesterRoutes);
-app.use('/api/courses', courseRoutes);
-app.use('/api/class', classRoutes);
+app.use('/api/courses', coursesRoutes);
+app.use('/api/class', classesRoutes);
 app.use('/api/holiday', holidayRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/onboarding', onboardingRoutes);
 
 const PORT = process.env.PORT || 4000;
 
