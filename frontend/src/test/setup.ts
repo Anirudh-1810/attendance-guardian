@@ -1,6 +1,20 @@
-import '@testing-library/jest-dom';
 import { expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
+
+// Use require to ensure these are polyfilled before any other imports
+const { File, Blob } = require('buffer');
+global.File = File;
+global.Blob = Blob;
+
+const { fetch, Headers, Request, Response } = require('undici');
+global.fetch = fetch;
+global.Headers = Headers;
+global.Request = Request;
+global.Response = Response;
+
+const { TextEncoder, TextDecoder } = require('util');
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 // Mock localStorage
 const localStorageMock = (() => {

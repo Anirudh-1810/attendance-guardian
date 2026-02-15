@@ -16,6 +16,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// health check
+app.get('/', (req, res) => res.json({ message: 'Attendance Guardian API is running' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
+
 // routes
 app.use('/api/auth', authRoutes);
 app.use('/api/semesters', semesterRoutes);
