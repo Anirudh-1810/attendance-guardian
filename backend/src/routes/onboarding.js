@@ -80,7 +80,7 @@ router.post('/', auth, async (req, res) => {
 
     } catch (error) {
         console.error('Onboarding error:', error);
-        res.status(500).json({ message: 'Failed to save onboarding data' });
+        res.status(500).json({ message: 'Failed to save onboarding data', error: error.message, stack: error.stack });
     }
 });
 
