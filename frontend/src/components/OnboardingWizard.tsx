@@ -50,7 +50,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/onboarding`, {
+            const response = await fetch("/api/onboarding", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

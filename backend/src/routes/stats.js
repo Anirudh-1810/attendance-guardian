@@ -1,14 +1,15 @@
 const express = require('express');
 const prisma = require('../prisma');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get overall stats for a semester
-router.get('/semester/:semesterId', async (req, res) => {
+router.get('/semester/:semesterId', auth, async (req, res) => {
   try {
     const { semesterId } = req.params;
 
-    const subjects = await prisma.subject.findMany({
+    const subjects = await prisma.userCourse.findMany({
       where: { semesterId },
       include: {
         classes: true,
@@ -39,8 +40,8 @@ router.get('/semester/:semesterId', async (req, res) => {
 
       return {
         subjectId: subject.id,
-        subjectName: subject.name,
-        subjectCode: subject.code,
+        subjectName: subject.courseName,
+        subjectCode: subject.courseCode,
         totalClasses,
         attendedClasses,
         absentClasses,
@@ -73,7 +74,7 @@ router.get('/semester/:semesterId', async (req, res) => {
 });
 
 // Get attendance trend for a subject
-router.get('/subject/:subjectId/trend', async (req, res) => {
+router.get('/subject/:subjectId/trend', auth, async (req, res) => {
   try {
     const { subjectId } = req.params;
 

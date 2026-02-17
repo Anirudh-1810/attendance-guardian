@@ -9,11 +9,13 @@ class ApiError extends Error {
 
 async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
+  const token = localStorage.getItem('token');
 
   const response = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });
@@ -44,86 +46,71 @@ export const semesterAPI = {
     fetchAPI(`/semesters/${id}`, { method: 'DELETE' }),
 };
 
-// Subject API
+// Subject API (maps to /courses backend route)
 export const subjectAPI = {
   getAll: (semesterId: string) =>
-    fetchAPI(`/subjects?semesterId=${semesterId}`),
-
-  getOne: (id: string) =>
-    fetchAPI(`/subjects/${id}`),
+    fetchAPI(`/courses/${semesterId}`),
 
   create: (data: any) =>
-    fetchAPI('/subjects', { method: 'POST', body: JSON.stringify(data) }),
-
-  bulkCreate: (subjects: any[], semesterId: string) =>
-    fetchAPI('/subjects/bulk', {
-      method: 'POST',
-      body: JSON.stringify({ subjects, semesterId })
-    }),
-
-  update: (id: string, data: any) =>
-    fetchAPI(`/subjects/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-
-  delete: (id: string) =>
-    fetchAPI(`/subjects/${id}`, { method: 'DELETE' }),
+    fetchAPI('/courses', { method: 'POST', body: JSON.stringify(data) }),
 };
 
-// Class API
+// Class API (maps to /class backend route)
 export const classAPI = {
   getAll: (subjectId: string, startDate?: string, endDate?: string) => {
-    let url = `/classes?subjectId=${subjectId}`;
+    let url = `/class?subjectId=${subjectId}`;
     if (startDate) url += `&startDate=${startDate}`;
     if (endDate) url += `&endDate=${endDate}`;
     return fetchAPI(url);
   },
 
   getByDate: (date: string, semesterId: string) =>
-    fetchAPI(`/classes/date/${date}?semesterId=${semesterId}`),
+    fetchAPI(`/class/date/${date}?semesterId=${semesterId}`),
 
   markAttendance: (id: string, status: string, notes?: string) =>
-    fetchAPI(`/classes/${id}/attendance`, {
+    fetchAPI(`/class/${id}/attendance`, {
       method: 'PATCH',
       body: JSON.stringify({ status, notes }),
     }),
 
   bulkMarkAttendance: (updates: Array<{ id: string; status: string; notes?: string }>) =>
-    fetchAPI('/classes/bulk-attendance', {
+    fetchAPI('/class/bulk-attendance', {
       method: 'POST',
       body: JSON.stringify({ updates }),
     }),
 
   create: (data: any) =>
-    fetchAPI('/classes', { method: 'POST', body: JSON.stringify(data) }),
+    fetchAPI('/class', { method: 'POST', body: JSON.stringify(data) }),
 
   bulkCreate: (classes: any[]) =>
-    fetchAPI('/classes/bulk', {
+    fetchAPI('/class/bulk', {
       method: 'POST',
       body: JSON.stringify({ classes }),
     }),
 
   update: (id: string, data: any) =>
-    fetchAPI(`/classes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    fetchAPI(`/class/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
   delete: (id: string) =>
-    fetchAPI(`/classes/${id}`, { method: 'DELETE' }),
+    fetchAPI(`/class/${id}`, { method: 'DELETE' }),
 };
 
-// Holiday API
+// Holiday API (maps to /holiday backend route)
 export const holidayAPI = {
   getAll: (semesterId: string) =>
-    fetchAPI(`/holidays?semesterId=${semesterId}`),
+    fetchAPI(`/holiday?semesterId=${semesterId}`),
 
   create: (data: any) =>
-    fetchAPI('/holidays', { method: 'POST', body: JSON.stringify(data) }),
+    fetchAPI('/holiday', { method: 'POST', body: JSON.stringify(data) }),
 
   bulkCreate: (holidays: any[]) =>
-    fetchAPI('/holidays/bulk', {
+    fetchAPI('/holiday/bulk', {
       method: 'POST',
       body: JSON.stringify({ holidays }),
     }),
 
   delete: (id: string) =>
-    fetchAPI(`/holidays/${id}`, { method: 'DELETE' }),
+    fetchAPI(`/holiday/${id}`, { method: 'DELETE' }),
 };
 
 // Stats API
