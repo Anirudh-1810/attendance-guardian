@@ -183,4 +183,8 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// Mark attendance by date (Adhoc or Scheduled)
+const classController = require('../controllers/classController');
+router.post('/mark-date', classController.markSubjectAttendanceDate);
+
 module.exports = router;

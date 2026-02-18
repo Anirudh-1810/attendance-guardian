@@ -74,6 +74,7 @@ model Class {
   startTime String?
   endTime   String?
   status    String     @default("SCHEDULED")
+  weightage Int        @default(1)
   notes     String?
 }
 

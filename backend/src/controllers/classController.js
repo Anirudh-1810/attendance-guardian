@@ -40,3 +40,9 @@ exports.deleteClass = catchAsync(async (req, res, next) => {
     const result = await classService.deleteClass(req.params.id);
     res.status(200).json(result);
 });
+
+exports.markSubjectAttendanceDate = catchAsync(async (req, res, next) => {
+    const { subjectId, date, status } = req.body;
+    const result = await classService.markSubjectAttendanceDate(subjectId, date, status);
+    res.status(200).json(result);
+});

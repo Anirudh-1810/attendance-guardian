@@ -117,6 +117,103 @@ class ClassService {
         await prisma.class.delete({ where: { id } });
         return { message: 'Class deleted successfully' };
     }
+
+    async markSubjectAttendanceDate(subjectId, dateStr, status, weightage = 1) {
+        const date = new Date(dateStr);
+        // Ensure date is valid
+        if (isNaN(date.getTime())) {
+            throw new AppError('Invalid date format', 400);
+        }
+
+        return await prisma.$transaction(async (tx) => {
+            // 1. Find existing class for this subject on this date
+            const existingClass = await tx.class.findFirst({
+                where: {
+                    subjectId,
+                    date: date,
+                }
+            });
+
+            // 2. Determine state transition for counters
+            // We need to fetch the subject to update its counters
+            const subject = await tx.userCourse.findUnique({
+                where: { id: subjectId }
+            });
+
+            if (!subject) {
+                throw new AppError('Subject not found', 404);
+            }
+
+            let conductedDelta = 0;
+            let attendedDelta = 0;
+
+            if (!existingClass) {
+                // Case: New Class
+                conductedDelta = weightage;
+                if (status === 'PRESENT') {
+                    attendedDelta = weightage;
+                }
+            } else {
+                // Case: Updating Existing Class
+                const oldStatus = existingClass.status;
+                const oldWeightage = existingClass.weightage || 1; // Default to 1 if not set (from past data)
+
+                // If status AND weightage are same, do nothing
+                if (oldStatus === status && oldWeightage === weightage) {
+                    return existingClass;
+                }
+
+                // Reverse old impact
+                // Assume old was conducted if it existed (and wasn't cancelled/scheduled weirdly? let's assume conducted)
+                conductedDelta -= oldWeightage;
+                if (oldStatus === 'PRESENT') {
+                    attendedDelta -= oldWeightage;
+                }
+
+                // Add new impact
+                conductedDelta += weightage;
+                if (status === 'PRESENT') {
+                    attendedDelta += weightage;
+                }
+            }
+
+            // 3. Update Subject Counters
+            if (conductedDelta !== 0 || attendedDelta !== 0) {
+                await tx.userCourse.update({
+                    where: { id: subjectId },
+                    data: {
+                        totalClassesConducted: { increment: conductedDelta },
+                        totalClassesAttended: { increment: attendedDelta }
+                    }
+                });
+            }
+
+            // 4. Create or Update Class Record
+            if (existingClass) {
+                return await tx.class.update({
+                    where: { id: existingClass.id },
+                    data: { status, weightage },
+                    include: { subject: true }
+                });
+            } else {
+                // Create new class (adhoc class)
+                // Need to find dayOfWeek
+                const dayOfWeek = date.getDay();
+                return await tx.class.create({
+                    data: {
+                        subjectId,
+                        date,
+                        dayOfWeek,
+                        status,
+                        weightage,
+                        startTime: '00:00', // Default or make optional
+                        endTime: '00:00'
+                    },
+                    include: { subject: true }
+                });
+            }
+        });
+    }
 }
 
 module.exports = new ClassService();
