@@ -4,7 +4,7 @@ const auth = require('../middleware/auth');
 const NodeCache = require('node-cache');
 
 const router = express.Router();
-const cache = new NodeCache({ stdTTL: 30 }); // 30-second TTL
+const cache = new NodeCache({ stdTTL: 30, checkperiod: 0 }); // 30-second TTL, checkperiod 0 to prevent Jest hanging
 
 // Get overall stats for a semester
 router.get('/semester/:semesterId', auth, async (req, res) => {

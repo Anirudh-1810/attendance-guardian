@@ -1,8 +1,10 @@
 const express = require('express');
 const prisma = require('../prisma');
 const auth = require('../middleware/auth');
+const NodeCache = require('node-cache');
 
 const router = express.Router();
+const semesterCache = new NodeCache({ stdTTL: 30, checkperiod: 0 }); // 30 seconds TTL, checkperiod 0 to prevent Jest hanging
 
 // Get all semesters for a user
 router.get('/', auth, async (req, res) => {
@@ -26,6 +28,13 @@ router.get('/', auth, async (req, res) => {
 router.get('/current', auth, async (req, res) => {
   try {
     const userId = req.user.userId;
+
+    // Check cache first
+    const cachedSemester = semesterCache.get(userId);
+    if (cachedSemester) {
+      return res.json(cachedSemester);
+    }
+
     const now = new Date();
 
     console.time('semester-current-query');
@@ -90,6 +99,9 @@ router.get('/current', auth, async (req, res) => {
         }
       });
     }
+
+    // Set cache
+    semesterCache.set(userId, semester);
 
     res.json(semester);
   } catch (error) {
