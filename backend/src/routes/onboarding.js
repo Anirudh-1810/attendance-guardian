@@ -34,25 +34,25 @@ router.post('/', auth, async (req, res) => {
             }
         });
 
-        // 2. Create Subjects
-        const createdSubjects = [];
-        for (const sub of subjects) {
-            const newSubject = await prisma.userCourse.create({
-                data: {
-                    semesterId: semester.id,
-                    courseCode: sub.name.substring(0, 3).toUpperCase(), // Mock code
-                    courseName: sub.name,
-                    requiredPercentage: sub.requiredPercentage || 75,
-                    totalClassesAttended: sub.initialAttended || 0,
-                    totalClassesConducted: sub.initialTotal || 0,
-                    classesPerWeek: 0, // Will calculate later or leave 0
-                    maxAllowedAbsences: 0,
-                    // Default values
+        // 2. Create Subjects (batch — single DB round trip)
+        const subjectsData = subjects.map(sub => ({
+            semesterId: semester.id,
+            courseCode: sub.name.substring(0, 3).toUpperCase(), // Mock code
+            courseName: sub.name,
+            requiredPercentage: sub.requiredPercentage || 75,
+            totalClassesAttended: sub.initialAttended || 0,
+            totalClassesConducted: sub.initialTotal || 0,
+            classesPerWeek: 0,
+            maxAllowedAbsences: 0,
+        }));
 
-                }
-            });
-            createdSubjects.push(newSubject);
-        }
+        await prisma.userCourse.createMany({ data: subjectsData });
+
+        // Fetch created subjects to get their IDs for timetable mapping
+        const createdSubjects = await prisma.userCourse.findMany({
+            where: { semesterId: semester.id },
+            orderBy: { createdAt: 'asc' },
+        });
 
         // 3. Create TimeTable
         // timetable entry: { day: 1, slot: 1, subjectIndex: 0 } (subjectIndex maps to subjects array)

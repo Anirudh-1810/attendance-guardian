@@ -23,18 +23,14 @@ class HolidayService {
     }
 
     async createHolidaysBulk(holidays) {
-        return await prisma.$transaction(
-            holidays.map(holiday =>
-                prisma.holiday.create({
-                    data: {
-                        date: new Date(holiday.date),
-                        name: holiday.name,
-                        type: holiday.type || 'HOLIDAY',
-                        semesterId: holiday.semesterId,
-                    },
-                })
-            )
-        );
+        return await prisma.holiday.createMany({
+            data: holidays.map(holiday => ({
+                date: new Date(holiday.date),
+                name: holiday.name,
+                type: holiday.type || 'HOLIDAY',
+                semesterId: holiday.semesterId,
+            })),
+        });
     }
 
     async deleteHoliday(id) {

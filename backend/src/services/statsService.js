@@ -3,58 +3,64 @@ const AppError = require('../utils/AppError');
 
 class StatsService {
     async getSemesterStats(semesterId) {
-        const subjects = await prisma.subject.findMany({
+        console.time('stats-service-query');
+
+        // Fetch subjects with count only — no class rows loaded
+        const subjects = await prisma.userCourse.findMany({
             where: { semesterId },
-            include: {
-                classes: true,
+            select: {
+                id: true,
+                courseName: true,
+                courseCode: true,
+                requiredPercentage: true,
+                _count: {
+                    select: { classes: true },
+                },
             },
         });
 
+        // Get per-status counts via groupBy (single DB query)
+        const statusCounts = await prisma.class.groupBy({
+            by: ['subjectId', 'status'],
+            where: { subject: { semesterId } },
+            _count: true,
+        });
+
+        console.timeEnd('stats-service-query');
+
+        // Build lookup map: subjectId -> { status -> count }
+        const countMap = {};
+        for (const row of statusCounts) {
+            if (!countMap[row.subjectId]) countMap[row.subjectId] = {};
+            countMap[row.subjectId][row.status] = row._count;
+        }
+
         const stats = subjects.map(subject => {
-            const totalClasses = subject.classes.length;
-            const attendedClasses = subject.classes.filter(
-                c => c.status === 'PRESENT' || c.status === 'DUTY_LEAVE' || c.status === 'MEDICAL_LEAVE'
-            ).length;
-            const absentClasses = subject.classes.filter(c => c.status === 'ABSENT').length;
+            const totalClasses = subject._count.classes;
+            const counts = countMap[subject.id] || {};
+
+            const attendedClasses =
+                (counts['PRESENT'] || 0) +
+                (counts['DUTY_LEAVE'] || 0) +
+                (counts['MEDICAL_LEAVE'] || 0);
+            const absentClasses = counts['ABSENT'] || 0;
             const attendance = totalClasses > 0 ? (attendedClasses / totalClasses) * 100 : 0;
 
-            // Calculate can bunk / must attend
-            const required = subject.requiredPercentage; // Note: original code used subject.requiredPercentage but schema has it on Semester mostly? 
-            // Wait, referencing schema in `SYSTEM_DOCUMENTATION.md`:
-            // UserCourse (which is 'subject' here?) has no requiredPercentage.
-            // Semester has requiredPercentage.
-            // But the original code `src/routes/stats.js` accessed `subject.requiredPercentage`.
-            // Let's check `UserCourse` model in `schema.prisma` from Documentation step 14.
-            // UserCourse: id, semesterId, courseCode... maxAllowedAbsences...
-            // Semester: requiredPercentage.
-            // Wait, original code says `const required = subject.requiredPercentage;`
-            // Does UserCourse have it?
-            // I need to check the schema or assume the original code was working.
-            // If the original code was working, then UserCourse MUST have requiredPercentage OR the `prisma.subject.findMany` query is actually finding `UserCourse` and it has that field.
-            // In `src/routes/stats.js` (Step 37): `const subjects = await prisma.subject.findMany({...})`.
-            // NOTE: In `schema.prisma` dump (step 14), the model is `UserCourse`.
-            // But `semesters.js` (Step 31) uses `include: { subjects: true }`.
-            // And `stats.js` uses `prisma.subject.findMany`.
-            // This implies there is a model named `Subject` OR `UserCourse` is mapped to `subjects` in the Semester relation.
-            // Let's assume the variable naming in original code is correct.
-            // If `subject.requiredPercentage` is used, I should keep it.
-
+            const required = subject.requiredPercentage;
             let canBunk = 0;
             let mustAttend = 0;
 
             if (attendance >= required) {
-                // Calculate how many can bunk
                 canBunk = Math.floor((attendedClasses - (required / 100) * totalClasses) / (required / 100));
             } else {
-                // Calculate how many must attend
                 const requiredAttended = Math.ceil((required / 100) * totalClasses);
                 mustAttend = requiredAttended - attendedClasses;
             }
 
             return {
                 subjectId: subject.id,
-                subjectName: subject.name,
-                subjectCode: subject.code,
+                subjectName: subject.courseName,
+                subjectCode: subject.courseCode,
                 totalClasses,
                 attendedClasses,
                 absentClasses,
@@ -87,6 +93,10 @@ class StatsService {
         const classes = await prisma.class.findMany({
             where: { subjectId },
             orderBy: { date: 'asc' },
+            select: {
+                date: true,
+                status: true,
+            },
         });
 
         let runningAttended = 0;

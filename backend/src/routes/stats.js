@@ -1,39 +1,73 @@
 const express = require('express');
 const prisma = require('../prisma');
 const auth = require('../middleware/auth');
+const NodeCache = require('node-cache');
 
 const router = express.Router();
+const cache = new NodeCache({ stdTTL: 30 }); // 30-second TTL
 
 // Get overall stats for a semester
 router.get('/semester/:semesterId', auth, async (req, res) => {
   try {
     const { semesterId } = req.params;
 
+    // Check cache first
+    const cacheKey = `stats-${semesterId}`;
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+
+    console.time('stats-query');
+
+    // 1. Fetch subjects with only the fields we need (no classes loaded)
     const subjects = await prisma.userCourse.findMany({
       where: { semesterId },
-      include: {
-        classes: true,
+      select: {
+        id: true,
+        courseName: true,
+        courseCode: true,
+        requiredPercentage: true,
+        _count: {
+          select: { classes: true },
+        },
       },
     });
 
+    // 2. Get per-status counts via groupBy (single DB query)
+    const statusCounts = await prisma.class.groupBy({
+      by: ['subjectId', 'status'],
+      where: { subject: { semesterId } },
+      _count: true,
+    });
+
+    console.timeEnd('stats-query');
+
+    // Build a lookup map: subjectId -> { status -> count }
+    const countMap = {};
+    for (const row of statusCounts) {
+      if (!countMap[row.subjectId]) countMap[row.subjectId] = {};
+      countMap[row.subjectId][row.status] = row._count;
+    }
+
     const stats = subjects.map(subject => {
-      const totalClasses = subject.classes.length;
-      const attendedClasses = subject.classes.filter(
-        c => c.status === 'PRESENT' || c.status === 'DUTY_LEAVE' || c.status === 'MEDICAL_LEAVE'
-      ).length;
-      const absentClasses = subject.classes.filter(c => c.status === 'ABSENT').length;
+      const totalClasses = subject._count.classes;
+      const counts = countMap[subject.id] || {};
+
+      const attendedClasses =
+        (counts['PRESENT'] || 0) +
+        (counts['DUTY_LEAVE'] || 0) +
+        (counts['MEDICAL_LEAVE'] || 0);
+      const absentClasses = counts['ABSENT'] || 0;
       const attendance = totalClasses > 0 ? (attendedClasses / totalClasses) * 100 : 0;
 
-      // Calculate can bunk / must attend
       const required = subject.requiredPercentage;
       let canBunk = 0;
       let mustAttend = 0;
 
       if (attendance >= required) {
-        // Calculate how many can bunk
         canBunk = Math.floor((attendedClasses - (required / 100) * totalClasses) / (required / 100));
       } else {
-        // Calculate how many must attend
         const requiredAttended = Math.ceil((required / 100) * totalClasses);
         mustAttend = requiredAttended - attendedClasses;
       }
@@ -64,10 +98,15 @@ router.get('/semester/:semesterId', auth, async (req, res) => {
       subjectsAtRisk: stats.filter(s => s.status === 'high' || s.status === 'critical').length,
     };
 
-    res.json({
+    const result = {
       overall: overallStats,
       subjects: stats,
-    });
+    };
+
+    // Cache the result
+    cache.set(cacheKey, result);
+
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -78,9 +117,14 @@ router.get('/subject/:subjectId/trend', auth, async (req, res) => {
   try {
     const { subjectId } = req.params;
 
+    // Only select the fields needed for trend computation
     const classes = await prisma.class.findMany({
       where: { subjectId },
       orderBy: { date: 'asc' },
+      select: {
+        date: true,
+        status: true,
+      },
     });
 
     let runningAttended = 0;

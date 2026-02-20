@@ -64,7 +64,6 @@ router.patch('/:id/attendance', async (req, res) => {
         status,
         ...(notes && { notes }),
       },
-      include: { subject: true },
     });
 
     res.json(updatedClass);
@@ -78,17 +77,21 @@ router.post('/bulk-attendance', async (req, res) => {
   try {
     const { updates } = req.body; // [{ id, status, notes }]
 
-    const results = await prisma.$transaction(
-      updates.map(({ id, status, notes }) =>
-        prisma.class.update({
-          where: { id },
-          data: {
-            status,
-            ...(notes && { notes }),
-          },
-        })
-      )
+    // Group updates by status for batch updateMany calls
+    const statusGroups = {};
+    for (const { id, status } of updates) {
+      if (!statusGroups[status]) statusGroups[status] = [];
+      statusGroups[status].push(id);
+    }
+
+    const operations = Object.entries(statusGroups).map(([status, ids]) =>
+      prisma.class.updateMany({
+        where: { id: { in: ids } },
+        data: { status },
+      })
     );
+
+    const results = await prisma.$transaction(operations);
 
     res.json(results);
   } catch (error) {
@@ -111,7 +114,6 @@ router.post('/', async (req, res) => {
         status: status || 'SCHEDULED',
         notes,
       },
-      include: { subject: true },
     });
 
     res.status(201).json(classEntry);
@@ -125,23 +127,19 @@ router.post('/bulk', async (req, res) => {
   try {
     const { classes } = req.body;
 
-    const created = await prisma.$transaction(
-      classes.map(cls =>
-        prisma.class.create({
-          data: {
-            subjectId: cls.subjectId,
-            date: new Date(cls.date),
-            dayOfWeek: cls.dayOfWeek,
-            startTime: cls.startTime,
-            endTime: cls.endTime,
-            status: cls.status || 'SCHEDULED',
-            notes: cls.notes,
-          },
-        })
-      )
-    );
+    const result = await prisma.class.createMany({
+      data: classes.map(cls => ({
+        subjectId: cls.subjectId,
+        date: new Date(cls.date),
+        dayOfWeek: cls.dayOfWeek,
+        startTime: cls.startTime,
+        endTime: cls.endTime,
+        status: cls.status || 'SCHEDULED',
+        notes: cls.notes,
+      })),
+    });
 
-    res.status(201).json(created);
+    res.status(201).json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -163,7 +161,6 @@ router.put('/:id', async (req, res) => {
         ...(status && { status }),
         ...(notes !== undefined && { notes }),
       },
-      include: { subject: true },
     });
 
     res.json(updatedClass);

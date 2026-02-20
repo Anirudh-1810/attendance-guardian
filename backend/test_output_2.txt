@@ -1,0 +1,384 @@
+
+> attendance-guardian-server@1.0.0 test
+> cross-env NODE_ENV=test jest
+
+PASS tests/routes/courses.test.js
+PASS tests/routes/semesters.test.js
+PASS tests/middleware/auth.test.js
+PASS tests/routes/holiday.test.js
+PASS tests/routes/class.test.js
+FAIL tests/routes/stats.test.js
+  ● Stats Routes › GET /stats/semester/:semesterId › should return stats
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      38 |             const res = await request(app).get('/stats/semester/sem1');
+      39 |
+    > 40 |             expect(res.statusCode).toBe(200);
+         |                                    ^
+      41 |             expect(res.body.overall.totalSubjects).toBe(1);
+      42 |             expect(res.body.subjects[0].subjectName).toBe('Math');
+      43 |         });
+
+      at Object.toBe (tests/routes/stats.test.js:40:36)
+
+PASS tests/routes/auth.test.js
+  ● Console
+
+    console.warn
+      JWT_SECRET env var not set. Falling back to insecure dev-secret.
+
+       8 |
+       9 | if (!process.env.JWT_SECRET) {
+    > 10 |   console.warn('JWT_SECRET env var not set. Falling back to insecure dev-secret.');
+         |           ^
+      11 | }
+      12 |
+      13 | // POST /auth/signup
+
+      at Object.warn (src/routes/auth.js:10:11)
+      at Object.require (tests/routes/auth.test.js:3:20)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: { name: 'Test', email: 'test@test.com', password: 'password' }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: { name: 'Test', email: 'test@test.com', password: 'password' }
+
+      at log (src/routes/auth.js:17:13)
+
+PASS tests/index.test.js
+  ● Console
+
+    console.warn
+      JWT_SECRET env var not set. Falling back to insecure dev-secret.
+
+       8 |
+       9 | if (!process.env.JWT_SECRET) {
+    > 10 |   console.warn('JWT_SECRET env var not set. Falling back to insecure dev-secret.');
+         |           ^
+      11 | }
+      12 |
+      13 | // POST /auth/signup
+
+      at Object.warn (src/routes/auth.js:10:11)
+      at Object.require (tests/index.test.js:9:20)
+
+PASS tests/routes/auth.property.test.js
+  ● Console
+
+    console.warn
+      JWT_SECRET env var not set. Falling back to insecure dev-secret.
+
+       8 |
+       9 | if (!process.env.JWT_SECRET) {
+    > 10 |   console.warn('JWT_SECRET env var not set. Falling back to insecure dev-secret.');
+         |           ^
+      11 | }
+      12 |
+      13 | // POST /auth/signup
+
+      at Object.warn (src/routes/auth.js:10:11)
+      at Object.require (tests/routes/auth.property.test.js:5:20)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: '09E#Hd',
+        email: '~2keeq+zr^|b.ap5&1{.d^y.x8+z9.~03rndp&yc.}{7fth%-1771431262423-2niy0v@property-test.com',
+        password: 'ra$yyXU'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: 'S!uCfw(xz!',
+        email: '^.&-1771431262634-4ion0s@property-test.com',
+        password: 'HG<?hjK@M^K!6"Z9.e'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: 'R#PSg',
+        email: '6qpn|kk+pil.+!q4/ya9h1m.|xo-1771431262794-xlbw9@property-test.com',
+        password: 'Lr|F=to[+25N-IH\\EQx:'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: ')W;A',
+        email: 'len._.|{|tructoua.a`c-1771431262905-5kvur8@property-test.com',
+        password: 'toString'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: 'p@~G[',
+        email: "dz'|mtb8.dwtk}.s${|m.=m*lx/&.3xe5=-ac2}=m.e==3dj-1771431263018-6x4mub@property-test.com",
+        password: '|, sEnumer'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: 'pr',
+        email: '=.f1.j.w{g_#_tpq.pdnu%.s1$^#.*ky-zk?${.=+}lj+k#o$m.%brio{i#-1771431263133-99iqxe@property-test.com',
+        password: '^#8jg`,AQFP[*<mDC.e'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: 'G78l',
+        email: 'sa#c``.constructor./paf.me-1771431263247-h88whk@property-test.com',
+        password: '__proto__'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: '^s"%',
+        email: "ab}q.1c8c='&8yn+v.!g{%*7w{$jb.z24oapw$.c8k.767!k^edf.ht#.#4hs-1771431263360-30tpwd@property-test.com",
+        password: 'llmcaller'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: '<qPf6c|cFG9\\',
+        email: '+1ffd?8m{bu.palu#4dz!t!7.2z0&.mqx.vw.vv=i0./|av.=grd$8}jhc=h.w_4-1771431263471-ruwbo8@property-test.com',
+        password: 'evyZyx_S^yQ}#'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: 'iFG2',
+        email: "'dk2o.bl64ikyk$l?.`6--`5?q}-c.bvr7iob-y.j+.tlfe+&-1771431263582-cbp3em@property-test.com",
+        password: '-u{-?..]v~0T!)gluQ'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: '?',
+        email: '&ml6f!1884v.x^wx9r6~.a+_.kn|y*w+n-1771431263693-wa32s@property-test.com',
+        password: ":7']-8Gf??_@,(l"
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: 'lengthly_l',
+        email: '=.sdj.f&9*ad9xp8r.k=qr.~j&.f69.jw.c``+`.-t3$a.pu$#~36b--1771431263852-8ss23c@property-test.com',
+        password: '0aJ4j2z9p_tN&I0F+tnfRi'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: 'sN',
+        email: 'prototype-1771431264010-p7p5le@property-test.com',
+        password: 'kY0-1[g@id:(zwR6>'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: 'LrX',
+        email: 'fdz=5nf0eww.iwy0.2$+1+-1771431264168-82i4fc@property-test.com',
+        password: ')9DrF.'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: '-%r^',
+        email: '4^.!3z-.h300%$.xz-gjc+ho9.83d^v$.w/y*pz.sb!l-1771431264328-35d2x8@property-test.com',
+        password: 'uxUDiq%U/+L^pak^}xy'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: 's',
+        email: '0o%2{6.+2.2!-h.?%``%o^-1771431264485-5bpobje@property-test.com',
+        password: '$@Yq{^DTNG09Wt'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: 'uments"#',
+        email: 'ce`btaf.d8ca_e1*d}_.4~b-1771431264760-dwqn79@property-test.com',
+        password: '6&fiy!"j`construct'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: '!!_',
+        email: 'k~bb.%ntrbe1v3{t#.#a9^kpfqs}.key-1771431264918-riijgx@property-test.com',
+        password: 'caller'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: '?X@-_GM`t9M2',
+        email: "dbdg.}7bd.}6/t2`k5'o'o.&9-1771431265078-qzslh@property-test.com",
+        password: '_ \\3=_~J'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+    console.log
+      Signup Content-Type: application/json
+
+      at log (src/routes/auth.js:16:13)
+
+    console.log
+      Signup Body: {
+        name: 'z',
+        email: '10$q.f}-1771431265282-jaormg@property-test.com',
+        password: 'L#RIU&i;"lF{1 "k~M'
+      }
+
+      at log (src/routes/auth.js:17:13)
+
+
+Test Suites: 1 failed, 8 passed, 9 total
+Tests:       1 failed, 17 passed, 18 total
+Snapshots:   0 total
+Time:        3.925 s, estimated 4 s
+Ran all test suites.

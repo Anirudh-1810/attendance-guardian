@@ -32,6 +32,8 @@ model Semester {
   // New fields for onboarding
   workingDays        String       @default("[]") // JSON string of days [1,2,3,4,5]
   timetable          TimeTable[]
+
+  @@index([userId])
 }
 
 model TimeTable {
@@ -44,6 +46,9 @@ model TimeTable {
   slot       Int      // 1 to 7 (or more)
   startTime  String?  // Optional "09:00"
   endTime    String?  // Optional "10:00"
+
+  @@index([semesterId])
+  @@index([subjectId])
 }
 
 model UserCourse {
@@ -63,6 +68,8 @@ model UserCourse {
   createdAt             DateTime @default(now())
   classes               Class[]
   timetable             TimeTable[]
+
+  @@index([semesterId])
 }
 
 model Class {
@@ -76,6 +83,12 @@ model Class {
   status    String     @default("SCHEDULED")
   weightage Int        @default(1)
   notes     String?
+
+  @@index([subjectId])
+  @@index([date])
+  @@index([subjectId, date])
+  @@index([status])
+  @@unique([subjectId, date])
 }
 
 model Holiday {
@@ -85,5 +98,7 @@ model Holiday {
   type       String   @default("HOLIDAY")
   semesterId String
   semester   Semester @relation(fields: [semesterId], references: [id])
+
+  @@index([semesterId])
 }
 

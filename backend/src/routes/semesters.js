@@ -28,62 +28,53 @@ router.get('/current', auth, async (req, res) => {
     const userId = req.user.userId;
     const now = new Date();
 
-    // 1. Fetch ALL semesters for the user to make a smart decision
+    console.time('semester-current-query');
+
+    // Single query: fetch all semesters with subjects + holidays in one shot
     const allSemesters = await prisma.semester.findMany({
       where: { userId },
       include: {
-        subjects: {
-          include: {
-            classes: true,
-          },
-        },
+        subjects: true,
         holidays: true,
       },
       orderBy: { startDate: 'desc' },
     });
 
+    console.timeEnd('semester-current-query');
+
     let semester = null;
-    let activeSemester = null;
-    let latestDataSemester = null;
 
-    // 2. Analyze semesters
-    for (const s of allSemesters) {
-      // Check if active (date match)
-      const isActive = new Date(s.startDate) <= now && new Date(s.endDate) >= now;
-      if (isActive && !activeSemester) {
-        activeSemester = s;
+    if (allSemesters.length > 0) {
+      // Pick the best semester using smart selection logic
+      let activeSemester = null;
+      let latestDataSemester = null;
+
+      for (const s of allSemesters) {
+        const isActive = new Date(s.startDate) <= now && new Date(s.endDate) >= now;
+        if (isActive && !activeSemester) {
+          activeSemester = s;
+        }
+        if (s.subjects.length > 0 && !latestDataSemester) {
+          latestDataSemester = s;
+        }
       }
 
-      // Check for data (has subjects) - prioritize most recent ones (already sorted desc)
-      if (s.subjects.length > 0 && !latestDataSemester) {
-        latestDataSemester = s;
+      if (activeSemester && activeSemester.subjects.length > 0) {
+        semester = activeSemester;
+      } else if (latestDataSemester) {
+        semester = latestDataSemester;
+      } else if (activeSemester) {
+        semester = activeSemester;
+      } else {
+        semester = allSemesters[0];
       }
     }
 
-    // 3. Smart Selection Logic
-    // Priority 1: Active semester WITH data
-    if (activeSemester && activeSemester.subjects.length > 0) {
-      semester = activeSemester;
-    }
-    // Priority 2: Latest semester WITH data (fallback if active is empty or missing)
-    else if (latestDataSemester) {
-      semester = latestDataSemester;
-    }
-    // Priority 3: Active semester (even if empty - maybe they just started it)
-    else if (activeSemester) {
-      semester = activeSemester;
-    }
-    // Priority 4: Latest semester (even if empty)
-    else if (allSemesters.length > 0) {
-      semester = allSemesters[0];
-    }
-
-    // 4. Result or Auto-create
-    // Only auto-create if NO semesters exist at all
+    // Auto-create if NO semesters exist at all
     if (!semester) {
       const startDate = new Date();
       const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + 6); // Default 6 months
+      endDate.setMonth(endDate.getMonth() + 6);
 
       semester = await prisma.semester.create({
         data: {
@@ -94,7 +85,7 @@ router.get('/current', auth, async (req, res) => {
           userId
         },
         include: {
-          subjects: { include: { classes: true } },
+          subjects: true,
           holidays: true
         }
       });

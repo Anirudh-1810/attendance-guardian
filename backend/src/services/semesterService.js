@@ -7,7 +7,6 @@ class SemesterService {
             where: { userId },
             include: {
                 subjects: true,
-                holidays: true,
             },
             orderBy: { startDate: 'desc' },
         });
@@ -23,11 +22,7 @@ class SemesterService {
                 endDate: { gte: now },
             },
             include: {
-                subjects: {
-                    include: {
-                        classes: true,
-                    },
-                },
+                subjects: true,
                 holidays: true,
             },
         });
@@ -47,7 +42,7 @@ class SemesterService {
                     userId
                 },
                 include: {
-                    subjects: { include: { classes: true } },
+                    subjects: true,
                     holidays: true
                 }
             });

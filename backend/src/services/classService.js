@@ -47,26 +47,21 @@ class ClassService {
                 status: status || 'SCHEDULED',
                 notes,
             },
-            include: { subject: true },
         });
     }
 
     async createClassesBulk(classes) {
-        return await prisma.$transaction(
-            classes.map(cls =>
-                prisma.class.create({
-                    data: {
-                        subjectId: cls.subjectId,
-                        date: new Date(cls.date),
-                        dayOfWeek: cls.dayOfWeek,
-                        startTime: cls.startTime,
-                        endTime: cls.endTime,
-                        status: cls.status || 'SCHEDULED',
-                        notes: cls.notes,
-                    },
-                })
-            )
-        );
+        return await prisma.class.createMany({
+            data: classes.map(cls => ({
+                subjectId: cls.subjectId,
+                date: new Date(cls.date),
+                dayOfWeek: cls.dayOfWeek,
+                startTime: cls.startTime,
+                endTime: cls.endTime,
+                status: cls.status || 'SCHEDULED',
+                notes: cls.notes,
+            })),
+        });
     }
 
     async updateClass(id, data) {
@@ -82,7 +77,6 @@ class ClassService {
                 ...(status && { status }),
                 ...(notes !== undefined && { notes }),
             },
-            include: { subject: true },
         });
     }
 
@@ -95,22 +89,25 @@ class ClassService {
                 status,
                 ...(notes && { notes }),
             },
-            include: { subject: true },
         });
     }
 
     async markAttendanceBulk(updates) {
-        return await prisma.$transaction(
-            updates.map(({ id, status, notes }) =>
-                prisma.class.update({
-                    where: { id },
-                    data: {
-                        status,
-                        ...(notes && { notes }),
-                    },
-                })
-            )
+        // Group updates by status for batch updateMany calls
+        const statusGroups = {};
+        for (const { id, status } of updates) {
+            if (!statusGroups[status]) statusGroups[status] = [];
+            statusGroups[status].push(id);
+        }
+
+        const operations = Object.entries(statusGroups).map(([status, ids]) =>
+            prisma.class.updateMany({
+                where: { id: { in: ids } },
+                data: { status },
+            })
         );
+
+        return await prisma.$transaction(operations);
     }
 
     async deleteClass(id) {
@@ -120,7 +117,6 @@ class ClassService {
 
     async markSubjectAttendanceDate(subjectId, dateStr, status, weightage = 1) {
         const date = new Date(dateStr);
-        // Ensure date is valid
         if (isNaN(date.getTime())) {
             throw new AppError('Invalid date format', 400);
         }
@@ -128,21 +124,8 @@ class ClassService {
         return await prisma.$transaction(async (tx) => {
             // 1. Find existing class for this subject on this date
             const existingClass = await tx.class.findFirst({
-                where: {
-                    subjectId,
-                    date: date,
-                }
+                where: { subjectId, date },
             });
-
-            // 2. Determine state transition for counters
-            // We need to fetch the subject to update its counters
-            const subject = await tx.userCourse.findUnique({
-                where: { id: subjectId }
-            });
-
-            if (!subject) {
-                throw new AppError('Subject not found', 404);
-            }
 
             let conductedDelta = 0;
             let attendedDelta = 0;
@@ -156,7 +139,7 @@ class ClassService {
             } else {
                 // Case: Updating Existing Class
                 const oldStatus = existingClass.status;
-                const oldWeightage = existingClass.weightage || 1; // Default to 1 if not set (from past data)
+                const oldWeightage = existingClass.weightage || 1;
 
                 // If status AND weightage are same, do nothing
                 if (oldStatus === status && oldWeightage === weightage) {
@@ -164,7 +147,6 @@ class ClassService {
                 }
 
                 // Reverse old impact
-                // Assume old was conducted if it existed (and wasn't cancelled/scheduled weirdly? let's assume conducted)
                 conductedDelta -= oldWeightage;
                 if (oldStatus === 'PRESENT') {
                     attendedDelta -= oldWeightage;
@@ -177,27 +159,24 @@ class ClassService {
                 }
             }
 
-            // 3. Update Subject Counters
+            // 2. Atomic counter update — no need to fetch subject first
             if (conductedDelta !== 0 || attendedDelta !== 0) {
                 await tx.userCourse.update({
                     where: { id: subjectId },
                     data: {
                         totalClassesConducted: { increment: conductedDelta },
-                        totalClassesAttended: { increment: attendedDelta }
-                    }
+                        totalClassesAttended: { increment: attendedDelta },
+                    },
                 });
             }
 
-            // 4. Create or Update Class Record
+            // 3. Create or Update Class Record (no include: { subject: true })
             if (existingClass) {
                 return await tx.class.update({
                     where: { id: existingClass.id },
                     data: { status, weightage },
-                    include: { subject: true }
                 });
             } else {
-                // Create new class (adhoc class)
-                // Need to find dayOfWeek
                 const dayOfWeek = date.getDay();
                 return await tx.class.create({
                     data: {
@@ -206,10 +185,9 @@ class ClassService {
                         dayOfWeek,
                         status,
                         weightage,
-                        startTime: '00:00', // Default or make optional
-                        endTime: '00:00'
+                        startTime: '00:00',
+                        endTime: '00:00',
                     },
-                    include: { subject: true }
                 });
             }
         });
