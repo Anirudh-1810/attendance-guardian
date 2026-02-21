@@ -7,6 +7,7 @@ import { Navbar } from "@/components/Navbar";
 import { GraduationCap, Plus, CheckCircle2, AlertTriangle, Trash2 } from "lucide-react";
 import { useAttendanceData } from "@/hooks/useAttendanceData";
 import { calculateStatus } from "@/lib/calculations";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import AddSubjectDialog from "@/components/AddSubjectDialog";
 import SubjectCard from "@/components/SubjectCard";
@@ -26,12 +27,46 @@ import {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { subjects, setSubjects, refetch } = useAttendanceData();
+  const { subjects, setSubjects, refetch, updateSubject, loading } = useAttendanceData();
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   const totalAttended = subjects.reduce((acc, s) => acc + s.attendedClasses, 0);
   const totalClasses = subjects.reduce((acc, s) => acc + s.totalClasses, 0);
   const avgAttendance = totalClasses > 0 ? Math.round((totalAttended / totalClasses) * 100) : 0;
+
+  // Show skeleton while data is loading
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-transparent text-foreground relative z-10">
+        <Navbar />
+        <main className="container mx-auto px-4 py-8">
+          {/* Header skeleton */}
+          <div className="mb-8 p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 shadow-lg">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-16 w-16 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-64" />
+              </div>
+            </div>
+          </div>
+          {/* Stats skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-32 rounded-xl" />
+            ))}
+          </div>
+          {/* Subject cards skeleton */}
+          <Skeleton className="h-8 w-48 mb-6" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-48 rounded-xl" />
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   const handleDeleteSubject = (id: number, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click
@@ -83,7 +118,7 @@ export default function Dashboard() {
         </div>
         {/* Stats Overview */}
         {subjects.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
             <Card className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-xl">
               <div className="flex items-center justify-between">
                 <div>
@@ -146,12 +181,13 @@ export default function Dashboard() {
           {subjects.length === 0 ? (
             <OnboardingWizard onComplete={() => refetch()} />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {subjects.map((subject) => (
                 <SubjectCard
                   key={subject.id}
                   subject={subject}
                   onDelete={(id, e) => handleDeleteSubject(id as any, e)}
+                  onAttendanceUpdate={(status) => updateSubject(subject.id, status)}
                 />
               ))}
             </div>
@@ -201,7 +237,7 @@ export default function Dashboard() {
             </Card>
 
             {/* Bar Chart and Pie Chart Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               {/* Bar Chart - Classes Comparison */}
               <Card className="p-6 shadow-lg bg-card text-card-foreground">
                 <div className="mb-6">

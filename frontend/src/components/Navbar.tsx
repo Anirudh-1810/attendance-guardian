@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { GraduationCap, LogOut } from "lucide-react";
+import { GraduationCap, LogOut, Menu } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   DropdownMenu,
@@ -11,6 +11,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -61,16 +68,46 @@ export function Navbar() {
 
             <div className="h-6 w-px bg-border hidden md:block" />
 
+
             <div className="flex items-center gap-2">
-              {!isDashboard ? (
-                <Link to="/dashboard" className="md:hidden">
-                  <Button size="sm" variant="outline">Dashboard</Button>
-                </Link>
-              ) : (
-                <Link to="/" className="md:hidden">
-                  <Button size="sm" variant="outline">Home</Button>
-                </Link>
-              )}
+              <div className="md:hidden">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="mr-2">
+                      <Menu className="h-5 w-5" />
+                      <span className="sr-only">Toggle menu</span>
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-[240px] sm:w-[300px]">
+                    <SheetHeader className="text-left mb-6">
+                      <SheetTitle className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+                          <GraduationCap className="h-5 w-5 text-white" />
+                        </div>
+                        <span className="font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                          Attendance Guardian
+                        </span>
+                      </SheetTitle>
+                    </SheetHeader>
+                    <nav className="flex flex-col gap-4">
+                      <Link to="/">
+                        <Button variant={location.pathname === "/" ? "secondary" : "ghost"} className="w-full justify-start">
+                          Home
+                        </Button>
+                      </Link>
+                      <Link to="/dashboard">
+                        <Button variant={isDashboard ? "secondary" : "ghost"} className="w-full justify-start">
+                          Dashboard
+                          <Badge variant="secondary" className="ml-2 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0 h-5 text-[10px]">
+                            Beta
+                          </Badge>
+                        </Button>
+                      </Link>
+                    </nav>
+                  </SheetContent>
+                </Sheet>
+              </div>
+
               <ThemeToggle />
 
               {user ? (
@@ -90,9 +127,9 @@ export function Navbar() {
                         <p className="text-xs leading-none text-muted-foreground">
                           {user.email}
                         </p>
-                        <p className="text-xs leading-none text-muted-foreground mt-1">
+                        {/* <p className="text-xs leading-none text-muted-foreground mt-1">
                           {user.course} • {user.universityNumber}
-                        </p>
+                        </p> */}
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />

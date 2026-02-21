@@ -13,7 +13,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2 } from "lucide-react";
+import { Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { calculateStatus, calculateBunks, calculateMustAttend } from "@/lib/calculations";
 import { Subject } from "@/hooks/useAttendanceData";
 import { useNavigate } from "react-router-dom";
@@ -21,9 +21,10 @@ import { useNavigate } from "react-router-dom";
 interface SubjectCardProps {
     subject: Subject;
     onDelete: (id: string, e: React.MouseEvent) => void;
+    onAttendanceUpdate: (status: 'present' | 'absent') => void;
 }
 
-export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onDelete }) => {
+export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onDelete, onAttendanceUpdate }) => {
     const navigate = useNavigate();
 
     const attendancePct = subject.totalClasses > 0 ? Math.round(
@@ -73,7 +74,7 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onDelete }) =
             onClick={() => navigate(`/subject/${subject.id}`)}
         >
             {/* Delete Button (Visible on hover) */}
-            <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute top-4 right-4 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button
@@ -163,6 +164,29 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onDelete }) =
                         </p>
                         <p className="text-[10px] text-muted-foreground">classes</p>
                     </div>
+                </div>
+                {/* Mark Attendance Buttons */}
+                <div className="grid grid-cols-2 gap-3 pt-4 mt-2 border-t border-black/5 dark:border-white/5">
+                    <Button
+                        className="w-full bg-green-600 hover:bg-green-700 text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-lg"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onAttendanceUpdate("present");
+                        }}
+                    >
+                        <CheckCircle2 className="h-5 w-5 mr-2" />
+                        Present
+                    </Button>
+                    <Button
+                        className="w-full bg-red-600 hover:bg-red-700 text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-lg"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onAttendanceUpdate("absent");
+                        }}
+                    >
+                        <XCircle className="h-5 w-5 mr-2" />
+                        Absent
+                    </Button>
                 </div>
             </div>
         </Card>

@@ -1,6 +1,13 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Menu } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export function HomeNavbar() {
   return (
@@ -34,6 +41,49 @@ export function HomeNavbar() {
             </nav>
 
             <div className="h-6 w-px bg-border hidden md:block" />
+
+            <div className="md:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="mr-2">
+                    <Menu className="h-5 w-5" />
+                    <span className="sr-only">Toggle menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[240px] sm:w-[300px]">
+                  <SheetHeader className="text-left mb-6">
+                    <SheetTitle className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+                        <GraduationCap className="h-5 w-5 text-white" />
+                      </div>
+                      <span className="font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        Attendance Guardian
+                      </span>
+                    </SheetTitle>
+                  </SheetHeader>
+                  <nav className="flex flex-col gap-4">
+                    <a href="#features" className="w-full">
+                      <Button variant="ghost" className="w-full justify-start">Features</Button>
+                    </a>
+                    <a href="#reviews" className="w-full">
+                      <Button variant="ghost" className="w-full justify-start">Reviews</Button>
+                    </a>
+                    <a href="#faq" className="w-full">
+                      <Button variant="ghost" className="w-full justify-start">FAQ</Button>
+                    </a>
+                    <div className="h-px bg-border my-2" />
+                    <a href="#login-card" className="w-full">
+                      <Button variant="outline" className="w-full justify-start">Login</Button>
+                    </a>
+                    <a href="#login-card" className="w-full">
+                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white justify-start">
+                        Sign Up
+                      </Button>
+                    </a>
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            </div>
 
             <div className="flex items-center gap-2">
               <a href="#login-card">

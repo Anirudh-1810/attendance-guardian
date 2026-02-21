@@ -16,16 +16,42 @@ import { calculateStatus, calculateBunks, calculateMustAttend } from "@/lib/calc
 import AttendanceCalendar from "@/components/AttendanceCalendar";
 import WhatIfCalculator from "@/components/WhatIfCalculator";
 import { Navbar } from "@/components/Navbar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Line } from "recharts";
 
 export default function SubjectDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { getSubject } = useAttendanceData();
+  const { getSubject, loading } = useAttendanceData();
   const [showCalendar, setShowCalendar] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
   const subject = getSubject(id!);
+
+  // Show skeleton while data is still loading — don't show "Not Found" prematurely
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-transparent text-foreground relative z-10">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8 space-y-6">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-md" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+          <Skeleton className="h-20 rounded-xl" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-24 rounded-xl" />
+            ))}
+          </div>
+          <Skeleton className="h-[300px] rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   if (!subject) {
     return (
