@@ -283,10 +283,10 @@ export default function LandingPage() {
 
       <HomeNavbar />
 
-      <main className="container mx-auto px-4 py-12 relative z-10">
+      <main className="container mx-auto px-4 py-8 md:py-12 relative z-10">
 
         {/* HERO SECTION */}
-        <div className="grid lg:grid-cols-2 gap-16 items-center mb-24">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center mb-12 md:mb-24">
           <div className="space-y-8 animate-in slide-in-from-left-10 duration-700 fade-in">
             <div className="space-y-6">
               <Badge variant="outline" className="py-1 px-3 border-white/20 text-white bg-white/5 backdrop-blur-md shadow-[0_0_15px_rgba(255,255,255,0.1)]">
@@ -501,7 +501,7 @@ export default function LandingPage() {
         </div>
 
         {/* STUDENT REVIEWS (MARQUEE) */}
-        <div className="mb-24 overflow-hidden">
+        <div className="mb-12 md:mb-24 overflow-hidden">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">Student Voices</h2>
 
           <div className="relative w-full">
@@ -523,7 +523,7 @@ export default function LandingPage() {
         </div>
 
         {/* Feature Sections */}
-        <div className="grid md:grid-cols-2 gap-8 mb-24">
+        <div className="grid md:grid-cols-2 gap-8 mb-12 md:mb-24">
           <div className="space-y-4">
             <h3 className="text-xl font-bold flex items-center gap-2 text-white">
               <Bell className="h-5 w-5 text-blue-400" /> Smart Alerts
@@ -582,7 +582,7 @@ export default function LandingPage() {
         </div>
 
         {/* Feature Comparison (Glass Table) */}
-        <div className="mb-24">
+        <div className="mb-12 md:mb-24">
           <h2 className="text-3xl font-bold text-center mb-12 text-white">Why Choose Us?</h2>
           <div className="overflow-x-auto rounded-xl border border-white/10 shadow-[0_0_30px_rgba(255,255,255,0.05)] bg-black/40 backdrop-blur-md">
             <table className="w-full text-sm text-left">
@@ -609,7 +609,7 @@ export default function LandingPage() {
         </div>
 
         {/* College/Global Stats - ADDED BACK */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-24 text-center">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 md:mb-24 text-center">
           <div className="p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:border-blue-500/30 transition-colors">
             <p className="text-3xl font-bold text-blue-400 mb-1">82%</p>
             <p className="text-xs text-gray-500 uppercase tracking-wide">Avg. Attendance</p>
@@ -629,7 +629,7 @@ export default function LandingPage() {
         </div>
 
         {/* FAQ */}
-        <div className="max-w-2xl mx-auto mb-24">
+        <div className="max-w-2xl mx-auto mb-12 md:mb-24">
           <h2 className="text-2xl font-bold text-center mb-8 text-white">Frequently Asked Questions</h2>
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1" className="border-b border-white/10">
@@ -654,7 +654,7 @@ export default function LandingPage() {
         </div>
 
         {/* About Developers (Marquee) */}
-        <div className="mb-24 overflow-hidden">
+        <div className="mb-12 md:mb-24 overflow-hidden">
           <h2 className="text-2xl font-bold text-center mb-12 text-white">Meet the Developers</h2>
 
           <div className="relative w-full">
