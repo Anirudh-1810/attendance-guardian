@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,9 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface OnboardingWizardProps {
     onComplete: () => void;
+    isUpdate?: boolean;
+    existingSemesterId?: string;
+    onCancel?: () => void;
 }
 
 const DAYS = [
@@ -25,8 +28,8 @@ const DAYS = [
 
 const SLOTS = [1, 2, 3, 4, 5, 6, 7];
 
-export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
-    const [step, setStep] = useState(1);
+export default function OnboardingWizard({ onComplete, isUpdate, existingSemesterId, onCancel }: OnboardingWizardProps) {
+    const [step, setStep] = useState(isUpdate ? 2 : 1);
     const [loading, setLoading] = useState(false);
 
     // Data State
@@ -39,24 +42,55 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
         timetable: [] as { day: number; slot: number; subjectIndex: number }[],
     });
 
+    useEffect(() => {
+        if (isUpdate && existingSemesterId) {
+            const fetchSem = async () => {
+                try {
+                    const token = localStorage.getItem("token");
+                    const res = await fetch("/api/semesters/current", {
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.workingDays) {
+                            updateFormData("workingDays", JSON.parse(data.workingDays));
+                        }
+                    }
+                } catch (e) { }
+            };
+            fetchSem();
+        }
+    }, [isUpdate, existingSemesterId]);
+
     const updateFormData = (key: string, value: any) => {
         setFormData(prev => ({ ...prev, [key]: value }));
     };
 
     const handleNext = () => setStep(prev => prev + 1);
-    const handleBack = () => setStep(prev => prev - 1);
+    const handleBack = () => {
+        if (isUpdate && step === 2) {
+            if (onCancel) onCancel();
+        } else {
+            setStep(prev => prev - 1);
+        }
+    };
 
     const handleSubmit = async () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch("/api/onboarding", {
+            const endpoint = isUpdate ? "/api/onboarding/update" : "/api/onboarding";
+            const payload = isUpdate
+                ? { semesterId: existingSemesterId, subjects: formData.subjects, timetable: formData.timetable }
+                : formData;
+
+            const response = await fetch(endpoint, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(payload)
             });
 
             if (!response.ok) throw new Error("Failed to save data");
@@ -71,19 +105,19 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
     };
 
     return (
-        <div className="max-w-4xl mx-auto p-6">
-            <Card className="p-8 backdrop-blur-md bg-card/80 border-primary/20 shadow-2xl">
+        <div className={`mx-auto ${isUpdate ? 'w-full' : 'max-w-4xl p-6'}`}>
+            <Card className={`backdrop-blur-md bg-card/80 border-primary/20 shadow-2xl ${isUpdate ? 'border-none shadow-none bg-transparent' : 'p-8'}`}>
                 <div className="mb-8">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                            Setup Your Semester
+                            {isUpdate ? 'Add New Subjects' : 'Setup Your Semester'}
                         </h2>
-                        <span className="text-sm font-medium text-muted-foreground">Step {step} of 4</span>
+                        <span className="text-sm font-medium text-muted-foreground">Step {isUpdate ? step - 1 : step} of {isUpdate ? 3 : 4}</span>
                     </div>
                     <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
                         <div
                             className="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500"
-                            style={{ width: `${(step / 4) * 100}%` }}
+                            style={{ width: `${((isUpdate ? step - 1 : step) / (isUpdate ? 3 : 4)) * 100}%` }}
                         />
                     </div>
                 </div>
@@ -135,7 +169,7 @@ function Step1({ data, update, onNext }: any) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="space-y-6 px-1"
         >
             <div className="space-y-4">
                 <h3 className="text-xl font-semibold">Basic Details</h3>
@@ -232,7 +266,7 @@ function Step2({ data, update, onNext, onBack }: any) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="space-y-6 px-1"
         >
             <div className="space-y-4">
                 <h3 className="text-xl font-semibold">Add Subjects</h3>
@@ -325,7 +359,7 @@ function Step3({ data, update, onNext, onBack }: any) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="space-y-6 px-1"
         >
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -412,7 +446,7 @@ function Step4({ data, update, onSubmit, onBack, isLoading }: any) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-6"
+            className="space-y-6 px-1"
         >
             <div className="space-y-4">
                 <h3 className="text-xl font-semibold">Initial Attendance (Optional)</h3>

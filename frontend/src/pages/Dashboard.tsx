@@ -9,9 +9,9 @@ import { useAttendanceData } from "@/hooks/useAttendanceData";
 import { calculateStatus } from "@/lib/calculations";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import AddSubjectDialog from "@/components/AddSubjectDialog";
 import SubjectCard from "@/components/SubjectCard";
 import OnboardingWizard from "@/components/OnboardingWizard";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ResponsiveContainer, Legend, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, BarChart, Bar, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
 import {
   AlertDialog,
@@ -27,7 +27,7 @@ import {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { subjects, setSubjects, refetch, updateSubject, loading } = useAttendanceData();
+  const { subjects, setSubjects, refetch, updateSubject, loading, currentSemesterId } = useAttendanceData();
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   const totalAttended = subjects.reduce((acc, s) => acc + s.attendedClasses, 0);
@@ -330,8 +330,19 @@ export default function Dashboard() {
           </div>
         )}
       </main>
-
-      <AddSubjectDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-4xl p-0 border-none bg-transparent shadow-none [&>button]:top-8 [&>button]:right-8 [&>button]:text-muted-foreground [&>button]:bg-background/50 [&>button]:p-2 [&>button]:rounded-full [&>button:hover]:bg-background/80">
+          <OnboardingWizard
+            isUpdate={true}
+            existingSemesterId={currentSemesterId || undefined}
+            onComplete={() => {
+              setShowAddDialog(false);
+              refetch();
+            }}
+            onCancel={() => setShowAddDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
