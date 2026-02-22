@@ -186,7 +186,7 @@ export default function Dashboard() {
                 <SubjectCard
                   key={subject.id}
                   subject={subject}
-                  onDelete={(id, e) => handleDeleteSubject(id as number, e)}
+                  onDelete={(id, e) => handleDeleteSubject(id as any, e)}
                   onAttendanceUpdate={(status) => updateSubject(subject.id, status)}
                 />
               ))}
@@ -239,31 +239,53 @@ export default function Dashboard() {
             {/* Bar Chart and Pie Chart Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               {/* Bar Chart - Classes Comparison */}
-              <Card className="p-6 shadow-lg bg-card text-card-foreground">
+              {/* Bar Chart - Classes Comparison (Campaigns Style) */}
+              <Card className="p-8 shadow-2xl bg-[#232D3F] border-none text-white rounded-[24px]">
                 <div className="mb-6">
-                  <h2 className="text-xl font-bold mb-2">Classes Comparison</h2>
-                  <p className="text-sm text-muted-foreground">Attended vs Total classes</p>
+                  <h2 className="text-[22px] font-medium tracking-wide">Campaigns</h2>
                 </div>
-                <div className="h-[300px] w-full">
+                <div className="h-[280px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={subjects.map(sub => ({
                         name: sub.code,
-                        attended: sub.attendedClasses,
-                        missed: sub.totalClasses - sub.attendedClasses
+                        Finished: sub.attendedClasses,
+                        'Not Finished': sub.totalClasses - sub.attendedClasses
                       }))}
+                      margin={{ top: 20, right: 0, left: -25, bottom: 0 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis dataKey="name" className="text-xs" />
-                      <YAxis className="text-xs" />
-                      <Tooltip
-                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.4} />
+                      <XAxis
+                        dataKey="name"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 12, fill: '#94A3B8' }}
+                        dy={10}
                       />
-                      <Legend />
-                      <Bar dataKey="attended" fill="#10b981" name="Attended" />
-                      <Bar dataKey="missed" fill="#ef4444" name="Missed" />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 12, fill: '#94A3B8' }}
+                        domain={[0, 'auto']}
+                      />
+                      <Tooltip
+                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                        contentStyle={{ backgroundColor: '#1E252E', borderColor: 'rgba(255,255,255,0.1)', color: 'white', borderRadius: '12px' }}
+                      />
+                      <Bar dataKey="Finished" stackId="a" fill="#8B5CF6" barSize={16} radius={[0, 0, 4, 4]} />
+                      <Bar dataKey="Not Finished" stackId="a" fill="#E2D6FF" barSize={16} radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
+                </div>
+                <div className="flex items-center gap-6 mt-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#E2D6FF]"></div>
+                    <span className="text-[14px] text-gray-200">Finished</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#8B5CF6]"></div>
+                    <span className="text-[14px] text-gray-200">Not Finished</span>
+                  </div>
                 </div>
               </Card>
 

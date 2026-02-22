@@ -41,28 +41,32 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onDelete, onA
             bg: "bg-green-50 dark:bg-green-950/30",
             border: "border-green-200 dark:border-green-800",
             text: "text-green-600",
-            label: "✓ Safe"
+            label: "✓ Safe",
+            color: "#10B981"
         },
         warning: {
             gradient: "from-yellow-500 to-orange-500",
             bg: "bg-yellow-50 dark:bg-yellow-950/30",
             border: "border-yellow-200 dark:border-yellow-800",
             text: "text-yellow-600",
-            label: "⚠ Warning"
+            label: "⚠ Warning",
+            color: "#EAB308"
         },
         high: {
             gradient: "from-orange-500 to-red-500",
             bg: "bg-orange-50 dark:bg-orange-950/30",
             border: "border-orange-200 dark:border-orange-800",
             text: "text-orange-600",
-            label: "⚠ At Risk"
+            label: "⚠ At Risk",
+            color: "#F97316"
         },
         critical: {
             gradient: "from-red-500 to-red-700",
             bg: "bg-red-50 dark:bg-red-950/30",
             border: "border-red-200 dark:border-red-800",
             text: "text-red-600",
-            label: "⚠ Critical"
+            label: "⚠ Critical",
+            color: "#EF4444"
         },
     };
 
@@ -122,29 +126,50 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, onDelete, onA
                     </div>
                 </div>
 
-                {/* Horizontal Progress Bar with Stats */}
-                <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                        <div className="flex-1">
-                            <div className="relative h-8 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden shadow-inner">
-                                <div
-                                    className={`h-full bg-gradient-to-r ${config.gradient} transition-all duration-500 flex items-center justify-center`}
-                                    style={{ width: `${Math.max(5, attendancePct)}%` }}
-                                >
-                                    <span className="text-white text-xs font-bold drop-shadow-md">{attendancePct}%</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="text-right min-w-[80px]">
-                            <p className="text-sm font-bold">{subject.attendedClasses}/{subject.totalClasses}</p>
-                            <p className="text-xs text-muted-foreground">attended</p>
+                {/* Gauge Progress Bar with Stats */}
+                <div className="flex flex-col items-center mt-2 space-y-2">
+                    <div className="relative flex justify-center w-full">
+                        <svg
+                            viewBox="0 0 200 110"
+                            className="w-48 h-28 drop-shadow-sm"
+                        >
+                            {/* Background Arc */}
+                            <path
+                                d="M 20 90 A 80 80 0 0 1 180 90"
+                                fill="none"
+                                stroke="#334155"
+                                strokeWidth="18"
+                                strokeLinecap="round"
+                                className="opacity-30 dark:opacity-50"
+                            />
+                            {/* Foreground Arc */}
+                            <path
+                                d="M 20 90 A 80 80 0 0 1 180 90"
+                                fill="none"
+                                stroke={config.color}
+                                strokeWidth="18"
+                                strokeLinecap="round"
+                                strokeDasharray={251.3}
+                                strokeDashoffset={251.3 - (attendancePct / 100) * 251.3}
+                                className="transition-all duration-1000 ease-out"
+                            />
+                        </svg>
+                        <div className="absolute bottom-4 flex flex-col items-center justify-center">
+                            <span className="text-3xl font-bold">{attendancePct}%</span>
                         </div>
                     </div>
-                    <div className="flex items-center justify-between text-xs font-medium">
-                        <span className="text-muted-foreground">Target: {subject.requiredPercentage}%</span>
-                        <span className={config.text}>
-                            {config.label}
-                        </span>
+
+                    <div className="flex w-full items-end justify-between px-1">
+                        <div className="text-left">
+                            <p className="font-bold text-sm">{subject.attendedClasses}/{subject.totalClasses}</p>
+                            <p className="text-xs text-muted-foreground">attended</p>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-xs font-medium text-muted-foreground block mb-1">Target: {subject.requiredPercentage}%</span>
+                            <span className={`${config.text} text-xs font-bold block`}>
+                                {config.label}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
