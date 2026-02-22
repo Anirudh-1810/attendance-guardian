@@ -70,6 +70,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -98,6 +99,7 @@
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-50%);
   }
@@ -115,24 +117,24 @@
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }
 }
 
 .neon-text {
-  background: linear-gradient(
-    90deg,
-    #ff00ff,
-    #00ffff,
-    #00ff00,
-    #ffff00,
-    #ff0000,
-    #ff00ff
-  );
+  background: linear-gradient(90deg,
+      #ff00ff,
+      #00ffff,
+      #00ff00,
+      #ffff00,
+      #ff0000,
+      #ff00ff);
   background-size: 300% 300%;
   -webkit-background-clip: text;
   background-clip: text;

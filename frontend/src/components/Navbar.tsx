@@ -51,7 +51,7 @@ export function Navbar() {
           {/* Navigation & Actions */}
           <div className="flex items-center gap-4">
             <nav className="hidden md:flex gap-2 items-center">
-              <Link to="/">
+              <Link to="/" state={{ fromApp: true }}>
                 <Button variant={location.pathname === "/" ? "secondary" : "ghost"}>
                   Home
                 </Button>
@@ -90,7 +90,7 @@ export function Navbar() {
                       </SheetTitle>
                     </SheetHeader>
                     <nav className="flex flex-col gap-4">
-                      <Link to="/">
+                      <Link to="/" state={{ fromApp: true }}>
                         <Button variant={location.pathname === "/" ? "secondary" : "ghost"} className="w-full justify-start">
                           Home
                         </Button>

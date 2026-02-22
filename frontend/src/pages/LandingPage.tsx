@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { HomeNavbar } from "@/components/HomeNavbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -64,6 +64,7 @@ export default function LandingPage() {
     // Implement authentication logic here
   };
   const navigate = useNavigate();
+  const location = useLocation();
   const { login: authLogin, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -88,10 +89,10 @@ export default function LandingPage() {
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !location.state?.fromApp) {
       navigate("/dashboard");
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, location.state]);
 
   useEffect(() => {
     const hour = new Date().getHours();

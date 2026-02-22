@@ -186,7 +186,7 @@ export default function Dashboard() {
                 <SubjectCard
                   key={subject.id}
                   subject={subject}
-                  onDelete={(id, e) => handleDeleteSubject(id as any, e)}
+                  onDelete={(id, e) => handleDeleteSubject(id as number, e)}
                   onAttendanceUpdate={(status) => updateSubject(subject.id, status)}
                 />
               ))}
@@ -267,35 +267,57 @@ export default function Dashboard() {
                 </div>
               </Card>
 
-              {/* Pie Chart - Attendance Distribution */}
-              <Card className="p-6 shadow-lg bg-card text-card-foreground">
-                <div className="mb-6">
-                  <h2 className="text-xl font-bold mb-2">Attendance Distribution</h2>
-                  <p className="text-sm text-muted-foreground">Overall attendance breakdown</p>
+              {/* Pie Chart - Top 5 Subjects */}
+              <Card className="p-8 shadow-2xl bg-[#232D3F] border-none text-white rounded-[24px]">
+                <div className="mb-2">
+                  <h2 className="text-[22px] font-medium tracking-wide">Top 5 Subjects</h2>
                 </div>
-                <div className="h-[300px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={subjects.map((sub, index) => ({
-                          name: sub.code,
-                          value: sub.attendedClasses,
-                          fill: `hsl(${index * 60}, 70%, 50%)`
-                        }))}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        dataKey="value"
-                      >
-                        {subjects.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={`hsl(${index * 60}, 70%, 50%)`} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+                <div className="flex h-[280px] w-full items-center mt-4">
+                  <div className="flex-1 h-full max-w-[55%] relative -ml-4">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={subjects.slice(0, 5).map((sub) => ({
+                            name: sub.code,
+                            value: sub.attendedClasses,
+                          }))}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={65}
+                          outerRadius={95}
+                          dataKey="value"
+                          stroke="none"
+                          labelLine={{ stroke: 'white', strokeWidth: 1.5 }}
+                          label={({ x, y, percent, textAnchor }) => (
+                            <text x={x} y={y} fill="white" fontSize={16} fontWeight="400" textAnchor={textAnchor} dominantBaseline="central">
+                              {`${(percent * 100).toFixed(0)}%`}
+                            </text>
+                          )}
+                        >
+                          {subjects.slice(0, 5).map((_, index) => {
+                            const colors = ['#E2D6FF', '#B1A9FF', '#FFFFA3', '#A193F6', '#FDDDF9'];
+                            return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
+                          })}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{ backgroundColor: '#1E252E', borderColor: 'rgba(255,255,255,0.1)', color: 'white', borderRadius: '12px' }}
+                          itemStyle={{ color: 'white' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  {/* Custom Legend */}
+                  <div className="flex-1 pl-4 flex flex-col justify-center gap-4 border-l border-transparent">
+                    {subjects.slice(0, 5).map((sub, index) => {
+                      const colors = ['#E2D6FF', '#B1A9FF', '#FFFFA3', '#A193F6', '#FDDDF9'];
+                      return (
+                        <div key={sub.code} className="flex items-center gap-3">
+                          <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: colors[index % colors.length] }}></div>
+                          <span className="text-[17px] font-normal text-gray-100">{sub.code}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </Card>
             </div>
