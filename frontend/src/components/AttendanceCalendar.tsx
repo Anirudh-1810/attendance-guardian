@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
-import { 
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { CheckCircle2, XCircle, Ban, Plus, Minus } from "lucide-react";
 import { format, isSameDay } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AttendanceCalendarProps {
   subject: {
@@ -21,28 +22,40 @@ interface AttendanceCalendarProps {
   };
 }
 
-// Mock attendance data - in real app, this would come from API
-const mockAttendanceData = [
-  { date: new Date(2024, 10, 1), status: "present" },
-  { date: new Date(2024, 10, 3), status: "absent" },
-  { date: new Date(2024, 10, 5), status: "present" },
-  { date: new Date(2024, 10, 8), status: "dl" },
-  { date: new Date(2024, 10, 10), status: "ml" },
-  { date: new Date(2024, 10, 12), status: "present" },
-  { date: new Date(2024, 10, 15), status: "present" },
-  { date: new Date(2024, 10, 17), status: "absent" },
-  { date: new Date(2024, 10, 19), status: "present" },
-  { date: new Date(2024, 10, 22), status: "cancelled" },
-  { date: new Date(2024, 10, 24), status: "extra" },
-  { date: new Date(2024, 10, 26), status: "present" },
-];
-
 export default function AttendanceCalendar({ subject }: AttendanceCalendarProps) {
+  const { token, isAuthenticated } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [showDialog, setShowDialog] = useState(false);
+  const [attendanceData, setAttendanceData] = useState<{ date: Date, status: string }[]>([]);
+
+  useEffect(() => {
+    async function fetchAttendance() {
+      if (!isAuthenticated || !token || !subject.id) return;
+
+      try {
+        const res = await fetch(`/api/class?subjectId=${subject.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch attendance history");
+
+        const data = await res.json();
+        const mappedData = data.map((record: any) => ({
+          date: new Date(record.date),
+          status: record.status.toLowerCase(),
+        }));
+
+        setAttendanceData(mappedData);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    fetchAttendance();
+  }, [subject.id, token, isAuthenticated]);
 
   const getAttendanceForDate = (date: Date) => {
-    return mockAttendanceData.find((a) => isSameDay(a.date, date));
+    return attendanceData.find((a) => isSameDay(a.date, date));
   };
 
   const handleDateClick = (date: Date | undefined) => {
@@ -115,18 +128,18 @@ export default function AttendanceCalendar({ subject }: AttendanceCalendarProps)
               onSelect={handleDateClick}
               className="rounded-md border"
               modifiers={{
-                present: mockAttendanceData
+                present: attendanceData
                   .filter((a) => a.status === "present")
                   .map((a) => a.date),
-                absent: mockAttendanceData
+                absent: attendanceData
                   .filter((a) => a.status === "absent")
                   .map((a) => a.date),
-                dl: mockAttendanceData.filter((a) => a.status === "dl").map((a) => a.date),
-                ml: mockAttendanceData.filter((a) => a.status === "ml").map((a) => a.date),
-                cancelled: mockAttendanceData
-                  .filter((a) => a.status === "cancelled")
+                dl: attendanceData.filter((a) => a.status === "dl").map((a) => a.date),
+                ml: attendanceData.filter((a) => a.status === "ml").map((a) => a.date),
+                cancelled: attendanceData
+                  .filter((a) => a.status === "cancelled" || a.status === "canceled")
                   .map((a) => a.date),
-                extra: mockAttendanceData
+                extra: attendanceData
                   .filter((a) => a.status === "extra")
                   .map((a) => a.date),
               }}
@@ -167,9 +180,8 @@ export default function AttendanceCalendar({ subject }: AttendanceCalendarProps)
           {selectedAttendance && (
             <div className="space-y-4">
               <div
-                className={`p-4 rounded-lg ${
-                  statusConfig[selectedAttendance.status as keyof typeof statusConfig].bg
-                }`}
+                className={`p-4 rounded-lg ${statusConfig[selectedAttendance.status as keyof typeof statusConfig].bg
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   {(() => {
@@ -177,10 +189,9 @@ export default function AttendanceCalendar({ subject }: AttendanceCalendarProps)
                       statusConfig[selectedAttendance.status as keyof typeof statusConfig].icon;
                     return (
                       <Icon
-                        className={`h-8 w-8 ${
-                          statusConfig[selectedAttendance.status as keyof typeof statusConfig]
+                        className={`h-8 w-8 ${statusConfig[selectedAttendance.status as keyof typeof statusConfig]
                             .color
-                        }`}
+                          }`}
                       />
                     );
                   })()}

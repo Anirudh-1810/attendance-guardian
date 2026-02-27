@@ -22,7 +22,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 export default function SubjectDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { getSubject, loading } = useAttendanceData();
+  const { getSubject, updateSubject, loading } = useAttendanceData();
   const [showCalendar, setShowCalendar] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
@@ -122,10 +122,18 @@ export default function SubjectDetail() {
         </Card>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <Card className="p-4">
             <p className="text-sm text-muted-foreground">Current</p>
             <p className="text-3xl font-bold">{attendancePct}%</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-sm text-muted-foreground">Attended</p>
+            <p className="text-3xl font-bold text-green-600 dark:text-green-400">{subject.attendedClasses}</p>
+          </Card>
+          <Card className="p-4">
+            <p className="text-sm text-muted-foreground">Missed</p>
+            <p className="text-3xl font-bold text-red-600 dark:text-red-400">{subject.totalClasses - subject.attendedClasses}</p>
           </Card>
           <Card className="p-4">
             <p className="text-sm text-muted-foreground">Required</p>
@@ -139,6 +147,28 @@ export default function SubjectDetail() {
             <p className="text-sm text-muted-foreground">Must Attend</p>
             <p className="text-3xl font-bold text-red-600 dark:text-red-400">{mustAttend}</p>
           </Card>
+        </div>
+
+        {/* Mark Attendance Quick Actions */}
+        <div className="flex gap-4">
+          <Button
+            className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-md transition-all"
+            onClick={() => {
+              updateSubject(subject.id, "present");
+            }}
+          >
+            <CheckCircle2 className="h-5 w-5 mr-2" />
+            Mark Present
+          </Button>
+          <Button
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white shadow-md transition-all"
+            onClick={() => {
+              updateSubject(subject.id, "absent");
+            }}
+          >
+            <XCircle className="h-5 w-5 mr-2" />
+            Mark Absent
+          </Button>
         </div>
 
         {/* Attendance Progress Graph */}
