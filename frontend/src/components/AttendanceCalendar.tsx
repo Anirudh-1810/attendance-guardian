@@ -33,7 +33,8 @@ export default function AttendanceCalendar({ subject }: AttendanceCalendarProps)
       if (!isAuthenticated || !token || !subject.id) return;
 
       try {
-        const res = await fetch(`/api/class?subjectId=${subject.id}`, {
+        const { API_BASE_URL } = await import("@/lib/api");
+        const res = await fetch(`${API_BASE_URL}/class?subjectId=${subject.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -190,7 +191,7 @@ export default function AttendanceCalendar({ subject }: AttendanceCalendarProps)
                     return (
                       <Icon
                         className={`h-8 w-8 ${statusConfig[selectedAttendance.status as keyof typeof statusConfig]
-                            .color
+                          .color
                           }`}
                       />
                     );

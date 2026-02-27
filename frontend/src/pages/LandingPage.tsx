@@ -53,7 +53,9 @@ import {
   Quote,
   Instagram,
   Linkedin,
-  Twitter
+  Twitter,
+  Bug,
+  Mail
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -708,43 +710,49 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 bg-black/80 backdrop-blur-md mt-auto relative z-10">
+      <footer className="border-t border-white/10 bg-black/80 backdrop-blur-md mt-auto relative z-10 w-full">
         <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="col-span-2 md:col-span-1">
-              <h3 className="font-bold mb-2 flex items-center gap-2 text-white">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="col-span-1 md:col-span-1">
+              <h3 className="font-bold mb-3 flex items-center gap-2 text-white">
                 <GraduationCap className="h-4 w-4 text-blue-400" /> Attendance Guardian
               </h3>
-              <p className="text-xs text-gray-500">
-                Helping students manage their academic life.
+              <p className="text-xs text-gray-500 mb-6 max-w-xs">
+                Designed & built to help students manage their academic life effortlessly.
               </p>
+
+              <Button variant="outline" className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 gap-2 h-9 text-xs transition-colors bg-transparent shadow-none" onClick={() => window.location.href = 'mailto:support@attendanceguardian.com?subject=Bug Report'}>
+                <Bug className="h-3.5 w-3.5" /> Report a Bug
+              </Button>
             </div>
-            {/* Footer links */}
-            <div>
-              <h4 className="font-semibold text-sm mb-2 text-gray-300">Product</h4>
-              <ul className="text-xs space-y-2 text-gray-500">
-                <li className="hover:text-blue-400 cursor-pointer transition-colors">Features</li>
-                <li className="hover:text-blue-400 cursor-pointer transition-colors">Pricing</li>
-                <li className="hover:text-blue-400 cursor-pointer transition-colors">Integrations</li>
-              </ul>
+
+            <div className="col-span-1 md:col-span-3">
+              <h4 className="font-semibold text-sm mb-5 text-gray-300">Meet the Team</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {[
+                  { name: "Anirudh Sharma", role: "Full Stack Developer", email: "anirudh@example.com", linkedin: "https://linkedin.com/" },
+                  { name: "Sagar Chhikara", role: "Frontend Developer", email: "sagar@example.com", linkedin: "https://linkedin.com/" },
+                  { name: "Bhuvnesh", role: "Backend Developer", email: "bhuvnesh@example.com", linkedin: "https://linkedin.com/" },
+                  { name: "Chirag Dawra", role: "UI/UX Designer", email: "chirag@example.com", linkedin: "https://linkedin.com/" }
+                ].map((dev, i) => (
+                  <div key={i} className="flex flex-col space-y-1.5">
+                    <p className="text-sm font-medium text-gray-200">{dev.name}</p>
+                    <p className="text-xs text-blue-400 mb-1">{dev.role}</p>
+                    <div className="flex gap-3 pt-1">
+                      <a href={`mailto:${dev.email}`} title="Email" className="text-gray-500 hover:text-white transition-colors duration-200">
+                        <Mail className="h-4 w-4" />
+                      </a>
+                      <a href={dev.linkedin} title="LinkedIn" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-500 transition-colors duration-200">
+                        <Linkedin className="h-4 w-4" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div>
-              <h4 className="font-semibold text-sm mb-2 text-gray-300">Support</h4>
-              <ul className="text-xs space-y-2 text-gray-500">
-                <li className="hover:text-blue-400 cursor-pointer transition-colors">Help Center</li>
-                <li className="hover:text-blue-400 cursor-pointer transition-colors">Contact Us</li>
-                <li className="hover:text-blue-400 cursor-pointer transition-colors">Status</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-sm mb-2 text-gray-300">Legal</h4>
-              <ul className="text-xs space-y-2 text-gray-500">
-                <li className="hover:text-blue-400 cursor-pointer transition-colors">Privacy Policy</li>
-                <li className="hover:text-blue-400 cursor-pointer transition-colors">Terms of Service</li>
-              </ul>
-            </div>
+
           </div>
-          <div className="mt-8 pt-4 border-t border-white/10 text-center text-xs text-gray-600">
+          <div className="mt-8 pt-6 border-t border-white/10 text-center flex flex-col items-center gap-2 text-xs text-gray-600">
             <p>© 2024 Attendance Guardian. All rights reserved.</p>
             <p>v1.2.0 (Beta)</p>
           </div>

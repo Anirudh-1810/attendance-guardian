@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { API_BASE_URL } from "@/lib/api";
 
 export interface Subject {
     id: string;
@@ -41,7 +42,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
         setLoading(true);
         try {
-            const semRes = await fetch("/api/semesters/current", {
+            const semRes = await fetch(`${API_BASE_URL}/semesters/current`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -88,7 +89,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         try {
             if (!currentSemesterId) throw new Error("No active semester found");
 
-            const res = await fetch("/api/courses", {
+            const res = await fetch(`${API_BASE_URL}/courses`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -131,7 +132,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
 
         try {
             const date = new Date().toISOString().split('T')[0];
-            const res = await fetch("/api/class/mark-date", {
+            const res = await fetch(`${API_BASE_URL}/class/mark-date`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
