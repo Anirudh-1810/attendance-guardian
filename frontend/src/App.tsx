@@ -13,6 +13,7 @@ import SubjectDetail from "./pages/SubjectDetail";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
+import { Analytics } from "@vercel/analytics/next"
 
 import React, { Suspense } from "react";
 const LatticeBackground = React.lazy(() => import("@/components/LatticeBackground"));

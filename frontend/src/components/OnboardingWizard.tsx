@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowRight, ArrowLeft, Check, Plus, Trash2, Calendar as CalendarIcon, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { API_BASE_URL } from "@/lib/api";
 
 interface OnboardingWizardProps {
     onComplete: () => void;
@@ -47,7 +48,7 @@ export default function OnboardingWizard({ onComplete, isUpdate, existingSemeste
             const fetchSem = async () => {
                 try {
                     const token = localStorage.getItem("token");
-                    const res = await fetch("/api/semesters/current", {
+                    const res = await fetch(`${API_BASE_URL}/semesters/current`, {
                         headers: { "Authorization": `Bearer ${token}` }
                     });
                     if (res.ok) {
@@ -79,7 +80,7 @@ export default function OnboardingWizard({ onComplete, isUpdate, existingSemeste
         setLoading(true);
         try {
             const token = localStorage.getItem("token");
-            const endpoint = isUpdate ? "/api/onboarding/update" : "/api/onboarding";
+            const endpoint = isUpdate ? `${API_BASE_URL}/onboarding/update` : `${API_BASE_URL}/onboarding`;
             const payload = isUpdate
                 ? { semesterId: existingSemesterId, subjects: formData.subjects, timetable: formData.timetable }
                 : formData;
