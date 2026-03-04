@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AttendanceProvider } from "@/contexts/AttendanceContext";
 import Dashboard from "./pages/Dashboard";
 import Attendance from "./pages/Attendance";
@@ -32,24 +33,26 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <AuthProvider>
-              <AttendanceProvider>
-                <BrowserRouter>
-                  <Routes>
-                    {/* Landing Page as default route */}
-                    <Route path="/" element={<LandingPage />} />
+            <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
+              <AuthProvider>
+                <AttendanceProvider>
+                  <BrowserRouter>
+                    <Routes>
+                      {/* Landing Page as default route */}
+                      <Route path="/" element={<LandingPage />} />
 
-                    {/* Dashboard moved to its own route */}
-                    <Route path="/dashboard" element={<Dashboard />} />
+                      {/* Dashboard moved to its own route */}
+                      <Route path="/dashboard" element={<Dashboard />} />
 
-                    <Route path="/attendance" element={<Attendance />} />
-                    <Route path="/subject/:id" element={<SubjectDetail />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
-              </AttendanceProvider>
-            </AuthProvider>
+                      <Route path="/attendance" element={<Attendance />} />
+                      <Route path="/subject/:id" element={<SubjectDetail />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </BrowserRouter>
+                </AttendanceProvider>
+              </AuthProvider>
+            </GoogleOAuthProvider>
           </TooltipProvider>
         </QueryClientProvider>
       </ErrorBoundary>

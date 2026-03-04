@@ -11,11 +11,44 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  name      String?
-  password  String
-  semesters Semester[]
+  id              String       @id @default(uuid())
+  email           String       @unique
+  name            String?
+  password        String?      // Nullable for Google-only users
+  role            String       @default("student") // "student" or "admin"
+  googleId        String?      @unique             // Google OAuth sub ID
+  avatar          String?                           // Profile picture URL
+  createdAt       DateTime     @default(now())
+  semesters       Semester[]
+  createdInvites  InviteCode[] @relation("CreatedInvites")
+  redeemedInvite  InviteCode?  @relation("RedeemedInvite")
+}
+
+model OTP {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  otpHash   String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model InviteCode {
+  id            String    @id @default(uuid())
+  codeHash      String    @unique          // SHA-256 hash — never store plain invite codes
+  createdById   String
+  redeemedById  String?   @unique          // Prevents concurrent duplicate redemption at DB level
+  used          Boolean   @default(false)
+  revoked       Boolean   @default(false)
+  expiresAt     DateTime?
+  redeemedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  createdBy     User      @relation("CreatedInvites", fields: [createdById], references: [id])
+  redeemedBy    User?     @relation("RedeemedInvite", fields: [redeemedById], references: [id])
+
+  @@index([createdById])
 }
 
 model Semester {

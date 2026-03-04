@@ -15,15 +15,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Carousel,
   CarouselContent,
   CarouselItem,
@@ -59,11 +50,23 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { signup, login as apiLogin } from "@/api/auth";
+import { requestOtp, verifyOtp, googleLogin } from "@/api/auth";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 
 export default function LandingPage() {
-  const handleAuth = () => {
-    // Implement authentication logic here
+  // Google OAuth login handler
+  const handleGoogleSuccess = async (tokenResponse: any) => {
+    setIsLoading(true);
+    try {
+      const response = await googleLogin({ credential: tokenResponse.credential });
+      authLogin(response.token, response.user);
+      toast.success(response.message || "Logged in with Google!");
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast.error(error.message || "Google login failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,21 +76,12 @@ export default function LandingPage() {
   const [calcClasses, setCalcClasses] = useState([10]);
   const [greeting, setGreeting] = useState("Welcome to Attendance Guardian");
 
-  // Signup State
-  const [signupData, setSignupData] = useState({
-    name: "",
-    course: "",
-    universityNumber: "",
-    email: "",
-    password: "",
-    confirmPassword: ""
-  });
+  // OTP Auth State
+  const [authStep, setAuthStep] = useState<"email" | "otp">("email");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authOtp, setAuthOtp] = useState("");
 
-  // Login State
-  const [loginData, setLoginData] = useState({
-    email: "",
-    password: ""
-  });
+
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -110,93 +104,47 @@ export default function LandingPage() {
     }
   }, []);
 
-  const handleSignupChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSignupData({ ...signupData, [e.target.id]: e.target.value });
-  };
-
-  const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLoginData({ ...loginData, [e.target.name]: e.target.value });
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Client-side validation - ensure required fields are filled
-    if (!loginData.email || !loginData.password) {
-      toast.error("Please fill in all required fields");
+    if (!authEmail) {
+      toast.error("Please enter your email");
       return;
     }
 
     setIsLoading(true);
-
     try {
-      // Call real API login endpoint
-      const response = await apiLogin({
-        email: loginData.email,
-        password: loginData.password
-      });
-
-      // Store auth data using AuthContext
-      authLogin(response.token, response.user);
-
-      toast.success("Logged in successfully!");
-      navigate("/dashboard");
-    } catch (error) {
-      // Handle API errors and display via toast notifications
+      const response = await requestOtp(authEmail);
+      toast.success(response.message || "OTP sent successfully!");
+      setAuthStep("otp");
+    } catch (error: any) {
       if (error instanceof TypeError) {
-        // Network error
         toast.error("Connection failed. Please check your internet connection.");
-      } else if (error instanceof Error) {
-        // Extract error message from API response
-        toast.error(error.message);
       } else {
-        toast.error("An unexpected error occurred. Please try again.");
+        toast.error(error.message || "Failed to send OTP");
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Client-side validation - ensure required fields are filled
-    if (!signupData.name || !signupData.email || !signupData.password || !signupData.confirmPassword) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    // Client-side validation for password matching
-    if (signupData.password !== signupData.confirmPassword) {
-      toast.error("Passwords do not match!");
+    if (!authEmail || !authOtp || authOtp.length !== 6) {
+      toast.error("Please enter the complete 6-digit OTP");
       return;
     }
 
     setIsLoading(true);
-
     try {
-      // Send only name, email, and password to backend (exclude course and universityNumber)
-      const response = await signup({
-        name: signupData.name,
-        email: signupData.email,
-        password: signupData.password
-      });
-
-      // Store auth data using AuthContext
+      const response = await verifyOtp(authEmail, authOtp);
       authLogin(response.token, response.user);
-
-      toast.success("Account created successfully!");
+      toast.success("Logged in successfully!");
       navigate("/dashboard");
-    } catch (error) {
-      // Handle API errors and display via toast notifications
+    } catch (error: any) {
       if (error instanceof TypeError) {
-        // Network error
         toast.error("Connection failed. Please check your internet connection.");
-      } else if (error instanceof Error) {
-        // Extract error message from API response
-        toast.error(error.message);
       } else {
-        toast.error("An unexpected error occurred. Please try again.");
+        toast.error(error.message || "Invalid OTP");
       }
     } finally {
       setIsLoading(false);
@@ -374,102 +322,80 @@ export default function LandingPage() {
                 <CardDescription className="text-gray-400">Enter details to track attendance</CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="login" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-6 bg-white/5">
-                    <TabsTrigger value="login" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400">Login</TabsTrigger>
-                    <TabsTrigger value="signup" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400">Sign Up</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="login" className="space-y-4">
-                    <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-4 pt-2">
+                  {authStep === "email" ? (
+                    <form onSubmit={handleRequestOtp} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="email" className="text-gray-300">Email</Label>
+                        <Label htmlFor="email" className="text-gray-300">Email Address</Label>
                         <Input
                           id="login-email"
                           name="email"
                           type="email"
                           placeholder="student@university.edu"
                           required
-                          value={loginData.email}
-                          onChange={handleLoginChange}
+                          value={authEmail}
+                          onChange={(e) => setAuthEmail(e.target.value)}
                           className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-blue-500/50 focus:ring-blue-500/20"
                         />
                       </div>
+                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] text-white border-0" type="submit" disabled={isLoading || !authEmail}>
+                        {isLoading ? "Sending OTP..." : "Continue with Email"}
+                      </Button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleVerifyOtp} className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <Label htmlFor="password" className="text-gray-300">Password</Label>
-                          <a href="#" className="text-xs text-blue-400 hover:underline hover:text-blue-300">Forgot?</a>
-                        </div>
-                        <div className="relative">
-                          <Input
-                            id="password"
-                            name="password"
-                            type={showPassword ? "text" : "password"}
-                            required
-                            value={loginData.password}
-                            onChange={handleLoginChange}
-                            className="pr-10 bg-white/5 border-white/10 text-white focus:border-blue-500/50 focus:ring-blue-500/20"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
-                          >
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          <Label htmlFor="otp" className="text-gray-300">Enter OTP</Label>
+                          <button type="button" onClick={() => setAuthStep("email")} className="text-xs text-blue-400 hover:underline hover:text-blue-300">
+                            Change Email?
                           </button>
                         </div>
+                        <Input
+                          id="login-otp"
+                          name="otp"
+                          type="text"
+                          placeholder="123456"
+                          required
+                          maxLength={6}
+                          value={authOtp}
+                          onChange={(e) => setAuthOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                          className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus:border-blue-500/50 focus:ring-blue-500/20 text-center tracking-widest font-mono text-xl py-6"
+                        />
+                        <p className="text-xs text-gray-500 text-center mt-2">
+                          We sent a 6-digit code to {authEmail}
+                        </p>
                       </div>
-                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] text-white border-0" type="submit" disabled={isLoading}>
-                        {isLoading ? "Logging in..." : "Log In"}
+                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] text-white border-0" type="submit" disabled={isLoading || authOtp.length !== 6}>
+                        {isLoading ? "Verifying..." : "Login securely"}
                       </Button>
                     </form>
-                    <div className="relative my-4">
-                      <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/10" /></div>
-                      <div className="relative flex justify-center text-xs uppercase"><span className="bg-black/40 px-2 text-gray-500">Or</span></div>
-                    </div>
-                    <Button variant="outline" className="w-full gap-2 bg-white/5 border-white/10 text-white hover:bg-white/10" type="button" onClick={handleAuth}>
-                      <span className="font-bold">G</span> Continue with Google
-                    </Button>
-                  </TabsContent>
+                  )}
 
-                  <TabsContent value="signup" className="space-y-4">
-                    <form onSubmit={handleSignup} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name" className="text-gray-300">Full Name</Label>
-                        <Input id="name" placeholder="John Doe" required value={signupData.name} onChange={handleSignupChange} className="bg-white/5 border-white/10 text-white" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="course" className="text-gray-300">Course</Label>
-                          <Input id="course" placeholder="B.Tech CSE" required value={signupData.course} onChange={handleSignupChange} className="bg-white/5 border-white/10 text-white" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="universityNumber" className="text-gray-300">Univ. ID</Label>
-                          <Input id="universityNumber" placeholder="12345678" required value={signupData.universityNumber} onChange={handleSignupChange} className="bg-white/5 border-white/10 text-white" />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="text-gray-300">Email</Label>
-                        <Input id="email" type="email" placeholder="student@university.edu" required value={signupData.email} onChange={handleSignupChange} className="bg-white/5 border-white/10 text-white" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="password" className="text-gray-300">Password</Label>
-                          <Input id="password" type="password" required value={signupData.password} onChange={handleSignupChange} className="bg-white/5 border-white/10 text-white" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="confirmPassword" className="text-gray-300">Confirm</Label>
-                          <Input id="confirmPassword" type="password" required value={signupData.confirmPassword} onChange={handleSignupChange} className="bg-white/5 border-white/10 text-white" />
-                        </div>
-                      </div>
-                      <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-[0_0_20px_rgba(79,70,229,0.3)] text-white border-0" type="submit" disabled={isLoading}>
-                        {isLoading ? "Creating Account..." : "Sign Up"}
-                      </Button>
-                    </form>
-                  </TabsContent>
-                </Tabs>
+                  <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/10" /></div>
+                    <div className="relative flex justify-center text-xs uppercase"><span className="bg-black/40 px-3 text-gray-500 font-medium">Or</span></div>
+                  </div>
+
+                  <div className="flex justify-center w-full">
+                    <GoogleLogin
+                      onSuccess={(credentialResponse: CredentialResponse) => {
+                        if (credentialResponse.credential) {
+                          handleGoogleSuccess(credentialResponse);
+                        }
+                      }}
+                      onError={() => toast.error("Google Sign-In failed. Please try again.")}
+                      theme="filled_black"
+                      size="large"
+                      width="100%"
+                      text="continue_with"
+                      shape="rectangular"
+                    />
+                  </div>
+                </div>
               </CardContent>
             </Card>
+
 
             {/* Subject Snapshot */}
             <div className="w-full max-w-md bg-black/40 backdrop-blur-md rounded-xl p-4 border border-white/10 shadow-[0_0_30px_rgba(255,255,255,0.08)] animate-pulse-slow hover:-translate-y-1 transition-transform duration-500">
