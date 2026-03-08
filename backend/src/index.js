@@ -1,10 +1,12 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
 const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
 const semesterRoutes = require('./routes/semesters');
 const coursesRoutes = require('./routes/courses');
 const classesRoutes = require('./routes/class');
@@ -14,6 +16,8 @@ const onboardingRoutes = require('./routes/onboarding');
 
 const app = express();
 
+// Security headers
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
@@ -23,6 +27,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/semesters', semesterRoutes);
 app.use('/api/courses', coursesRoutes);
 app.use('/api/class', classesRoutes);
@@ -30,18 +35,46 @@ app.use('/api/holiday', holidayRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 
+// 404 handler
+app.all('*', (req, res, next) => {
+  res.status(404).json({
+    status: 'fail',
+    message: `Can't find ${req.originalUrl} on this server!`
+  });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+
+  res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message
+  });
+});
+
 const PORT = process.env.PORT || 4000;
 
-const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+let server;
+if (process.env.NODE_ENV !== 'test') {
+  server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
 
 process.on('unhandledRejection', (err) => {
   console.error('UNHANDLED REJECTION! 💥 Shutting down...');
   console.error(err.name, err.message);
-  server.close(() => {
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  } else {
     process.exit(1);
-  });
+  }
 });
 
 process.on('uncaughtException', (err) => {
