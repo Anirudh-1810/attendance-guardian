@@ -98,7 +98,8 @@ export default function LandingPage() {
     const user = localStorage.getItem("user");
     if (user) {
       const userData = JSON.parse(user);
-      setGreeting(`${timeGreeting}, ${userData.name.split(' ')[0]} 👋`);
+      const displayName = userData.name?.split(' ')[0] || 'Student';
+      setGreeting(`${timeGreeting}, ${displayName} 👋`);
     } else {
       setGreeting(`${timeGreeting}, Student 👋`);
     }
