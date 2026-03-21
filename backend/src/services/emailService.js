@@ -1,25 +1,24 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-    service: process.env.EMAIL_SERVICE || 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+// Initialize Resend
+// fallback allows the app to start even if the key is missing from Render temporarily
+const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key');
 
 /**
- * Sends an OTP email to the specified user.
+ * Sends an OTP email to the specified user using Resend.
  * @param {string} email Address to send to.
  * @param {string} otp The 6-digit OTP code to include in the email.
  */
 const sendOTPEmail = async (email, otp) => {
     try {
-        const info = await transporter.sendMail({
-            from: `"Attendance Guardian" <${process.env.EMAIL_USER || 'noreply@attendanceguardian.com'}>`,
-            to: email,
+        const { data, error } = await resend.emails.send({
+            // NOTE: Resend requires verified domains in production to email ANYONE.
+            // While testing on the free tier, you can only send FROM 'onboarding@resend.dev' 
+            // TO the email address you registered your Resend account with.
+            // Once you verify a domain, change this to 'noreply@yourdomain.com'
+            from: 'Attendance Guardian <onboarding@resend.dev>',
+            to: [email],
             subject: 'Your Attendance Guardian Login Code',
-            text: `Your Attendance Guardian login code is ${otp}. This code expires in 5 minutes.`,
             html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
           <h2 style="color: #4F46E5;">Attendance Guardian</h2>
@@ -30,10 +29,16 @@ const sendOTPEmail = async (email, otp) => {
         </div>
       `,
         });
-        console.log('OTP Email sent:', info.messageId);
+
+        if (error) {
+            console.error('Resend API returned an error:', error);
+            throw new Error(error.message);
+        }
+
+        console.log('OTP Email sent via Resend API:', data?.id);
         return true;
-    } catch (error) {
-        console.error('Error sending OTP email:', error);
+    } catch (err) {
+        console.error('Error sending OTP email:', err);
         throw new Error('Could not send OTP email');
     }
 };
