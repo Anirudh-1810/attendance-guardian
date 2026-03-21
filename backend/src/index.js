@@ -15,6 +15,7 @@ const statsRoutes = require('./routes/stats');
 const onboardingRoutes = require('./routes/onboarding');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Security headers
 app.use(helmet());
